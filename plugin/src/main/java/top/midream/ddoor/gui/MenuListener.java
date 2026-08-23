@@ -15,25 +15,31 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-package top.midream.ddoor.util;
+package top.midream.ddoor.gui;
 
-import org.bukkit.Bukkit;
-import org.bukkit.World;
-import org.bukkit.block.Block;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
 
-public final class BlockKey {
+/** Routes inventory events for DoorMenu sessions. */
+public final class MenuListener implements Listener {
 
-    private BlockKey() {}
+    private final DoorMenu menu;
 
-    public static long pack(int x, int y, int z) {
-        return ((long) (x & 0x3FFFFFF) << 38) | ((long) (z & 0x3FFFFFF) << 12) | (y & 0xFFF);
+    public MenuListener(DoorMenu menu) {
+        this.menu = menu;
     }
 
-    public static long pack(Block block) {
-        return pack(block.getX(), block.getY(), block.getZ());
+    @EventHandler
+    public void onClick(InventoryClickEvent event) {
+        menu.handleClick(event);
     }
 
-    public static World world(String name) {
-        return Bukkit.getWorld(name);
+    @EventHandler
+    public void onDrag(InventoryDragEvent event) {
+        if (event.getInventory().getHolder() instanceof DoorMenuHolder) {
+            event.setCancelled(true);
+        }
     }
 }

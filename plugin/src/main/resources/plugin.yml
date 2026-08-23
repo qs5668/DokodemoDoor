@@ -1,16 +1,17 @@
 name: DokodemoDoor
-version: 1.0.0
+version: '${project.version}'
 main: top.midream.ddoor.DDoorPlugin
 api-version: '1.21'
 authors: [qs5668]
 description: Pair-based cross-world door portals — place two doors, link with a key, walk through.
 website: https://dokodemodoor.plugin.midream.top
 folia-supported: false
+softdepend: [Vault, PlaceholderAPI]
 
 commands:
   ddoor:
     description: DokodemoDoor management command
-    usage: /ddoor <list|tp|rename|unlink|delete|key|stats|reload>
+    usage: /ddoor <gui|list|tp|rename|unlink|link|delete|key|stats|reload>
     aliases: [doko, anydoor]
 
 permissions:
@@ -21,7 +22,7 @@ permissions:
     description: Link doors with a key
     default: true
   ddoor.gui:
-    description: Open management GUI (reserved)
+    description: Open the door management GUI menu
     default: true
   ddoor.list:
     description: List own door pairs

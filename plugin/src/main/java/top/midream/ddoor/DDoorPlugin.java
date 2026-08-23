@@ -1,3 +1,20 @@
+/*
+ * DokodemoDoor — pair-based cross-world door portals for Minecraft.
+ * Copyright (C) 2026 qs5668
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
 package top.midream.ddoor;
 
 import org.bukkit.command.PluginCommand;
@@ -6,12 +23,15 @@ import top.midream.ddoor.command.DDoorCommand;
 import top.midream.ddoor.door.DoorRecord;
 import top.midream.ddoor.door.PairManager;
 import top.midream.ddoor.door.PortalRegistry;
+import top.midream.ddoor.gui.DoorMenu;
+import top.midream.ddoor.gui.MenuListener;
 import top.midream.ddoor.hook.PapiHook;
 import top.midream.ddoor.hook.VaultHook;
 import top.midream.ddoor.key.KeyItem;
 import top.midream.ddoor.listener.BlockWatcher;
 import top.midream.ddoor.listener.KeyUseListener;
 import top.midream.ddoor.listener.MoveListener;
+import top.midream.ddoor.platform.TextAdapter;
 import top.midream.ddoor.storage.DoorStore;
 import top.midream.ddoor.storage.MysqlStore;
 import top.midream.ddoor.storage.SqliteStore;
@@ -27,6 +47,7 @@ import java.util.logging.Level;
 public final class DDoorPlugin extends JavaPlugin {
 
     private volatile DDoorConfig cfg;
+    private TextAdapter text;
     private Msg msg;
     private DoorStore store;
     private WriteQueue writeQueue;
@@ -34,6 +55,7 @@ public final class DDoorPlugin extends JavaPlugin {
     private PairManager pairs;
     private TeleportEngine engine;
     private KeyItem keyItem;
+    private DoorMenu menu;
     private VaultHook vault;
     private PapiHook papiHook;
 
@@ -45,7 +67,8 @@ public final class DDoorPlugin extends JavaPlugin {
         reloadConfig();
         cfg = new DDoorConfig(this);
 
-        msg = new Msg(this);
+        text = new top.midream.ddoor.platform.TextAdapterImpl();
+        msg = new Msg(this, text);
         msg.load(cfg.language);
 
         writeQueue = new WriteQueue(this);
@@ -82,10 +105,12 @@ public final class DDoorPlugin extends JavaPlugin {
         pairs = new PairManager(this, registry, writeQueue, msg, vault);
         engine = new TeleportEngine(this, registry, pairs, msg, vault);
         keyItem = new KeyItem(this, msg);
+        menu = new DoorMenu(this);
 
         getServer().getPluginManager().registerEvents(new KeyUseListener(pairs, keyItem), this);
         getServer().getPluginManager().registerEvents(new MoveListener(registry, engine), this);
         getServer().getPluginManager().registerEvents(new BlockWatcher(pairs, registry, msg), this);
+        getServer().getPluginManager().registerEvents(new MenuListener(menu), this);
 
         PluginCommand cmd = getCommand("ddoor");
         if (cmd != null) {
@@ -106,7 +131,7 @@ public final class DDoorPlugin extends JavaPlugin {
             getLogger().info("PlaceholderAPI expansion registered");
         }
 
-        getLogger().info("DokodemoDoor enabled — place two doors, link with a key, walk through.");
+        getLogger().info("DokodemoDoor enabled (" + text.id() + " build) — place two doors, link with a key, walk through.");
     }
 
     @Override
@@ -129,11 +154,13 @@ public final class DDoorPlugin extends JavaPlugin {
     }
 
     public DDoorConfig cfg() { return cfg; }
+    public TextAdapter text() { return text; }
     public Msg msg() { return msg; }
     public DoorStore store() { return store; }
     public PortalRegistry registry() { return registry; }
     public PairManager pairs() { return pairs; }
     public TeleportEngine engine() { return engine; }
     public KeyItem keyItem() { return keyItem; }
+    public DoorMenu menu() { return menu; }
     public VaultHook vault() { return vault; }
 }

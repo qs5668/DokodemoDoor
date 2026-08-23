@@ -19,6 +19,7 @@ link:
   not-a-door: "<red>Right-click a door block</red>"
   unlink-cooldown: "<red>This door was just unlinked. Wait <gold>{seconds}</gold>s to re-link</red>"
   session-cancelled: "<gray>Pairing session cancelled</gray>"
+  mode-start: "<green>Keyless link mode: right-click the first door, then the second door (valid for <gold>{seconds}</gold>s). Type /ddoor link again to cancel</green>"
 
 tp:
   cooldown: "<red>Teleporting too fast, wait a moment…</red>"
@@ -42,8 +43,11 @@ cmd:
   no-permission: "<red>You don't have permission for this</red>"
   not-found: "<red>No door named <gold>{name}</gold></red>"
   player-only: "<red>Player only</red>"
+  player-offline: "<red>That player is not online</red>"
   reloaded: "<green>Config and messages reloaded (data untouched)</green>"
   renamed: "<green>Renamed: {old} → <gold>{name}</gold></green>"
+  rename-length: "<red>Door names must be 1–16 characters</red>"
+  deleted: "<green>Deleted door record: <gold>{name}</gold></green>"
   key-given: "<green>Gave <gold>{amount}</gold> door keys to <gold>{player}</gold></green>"
   key-received: "<green>Received <gold>{amount}</gold> door keys</green>"
   list-header: "<gray>── Door pairs (<gold>{count}</gold>) ──</gray>"
@@ -52,6 +56,39 @@ cmd:
   stats-header: "<gray>── Server stats ──</gray>"
   stats-total: "<gray>Pairs: <gold>{pairs}</gold> · Doors: <gold>{doors}</gold> · Total trips: <gold>{uses}</gold></gray>"
   usage-header: "<gray>── /ddoor commands ──</gray>"
+  usage-list: "<gray>/ddoor list{flags} <dark_gray>— list door pairs</dark_gray></gray>"
+  usage-tp: "<gray>/ddoor tp <name> <dark_gray>— teleport to a door</dark_gray></gray>"
+  usage-rename: "<gray>/ddoor rename <name> <new> <dark_gray>— rename a pair</dark_gray></gray>"
+  usage-unlink: "<gray>/ddoor unlink <name> <dark_gray>— unlink a pair</dark_gray></gray>"
+  usage-link: "<gray>/ddoor link <dark_gray>— keyless link mode (right-click two doors)</dark_gray></gray>"
+  usage-gui: "<gray>/ddoor gui <dark_gray>— open the pair manager menu</dark_gray></gray>"
+  usage-admin: "<gray>/ddoor delete <name> · key [amount] [player] · stats · reload</gray>"
+
+gui:
+  title: "<gradient:#b388ff:#6ea8fe>DokodemoDoor · My Pairs</gradient> <dark_gray>({page}/{pages})</dark_gray>"
+  door-name: "<gold>{name}</gold>"
+  door-lore:
+    - "<gray>End A:</gray> <white>{world_a}</white> <dark_gray>({x_a}, {y_a}, {z_a})</dark_gray>"
+    - "<gray>End B:</gray> <white>{world_b}</white> <dark_gray>({x_b}, {y_b}, {z_b})</dark_gray>"
+    - "<gray>Trips:</gray> <white>{uses}</white>"
+    - ""
+    - "<yellow>Left-click</yellow> <gray>to teleport</gray>"
+    - "<red>Shift+Right-click</red> <gray>to unlink</gray>"
+  empty-name: "<gray>No door pairs yet</gray>"
+  empty-lore:
+    - "<gray>Place two doors and right-click both</gray>"
+    - "<gray>with a Door Key to link them</gray>"
+  prev-name: "<yellow>← Previous page</yellow>"
+  next-name: "<yellow>Next page →</yellow>"
+  stats-name: "<gradient:#b388ff:#6ea8fe>My Stats</gradient>"
+  stats-lore:
+    - "<gray>Pairs:</gray> <white>{count}</white><dark_gray>/{limit}</dark_gray>"
+    - "<gray>Total trips:</gray> <white>{uses}</white>"
+  close-name: "<red>Close</red>"
+  key-name: "<bold><gradient:#b388ff:#6ea8fe>Door Key</gradient></bold>"
+  key-lore:
+    - "<gray>Right-click two doors to link them</gray>"
+    - "<gray>Craft:</gray> <white>Amethyst×4 + Iron×4 + Ender Eye×1</white>"
 
 audit:
   cleaned: "<gray>Audit done: removed {count} stale door records</gray>"

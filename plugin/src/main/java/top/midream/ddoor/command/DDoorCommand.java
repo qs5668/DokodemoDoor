@@ -1,17 +1,31 @@
+/*
+ * DokodemoDoor — pair-based cross-world door portals for Minecraft.
+ * Copyright (C) 2026 qs5668
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
 package top.midream.ddoor.command;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
-import org.bukkit.block.BlockFace;
 import org.jetbrains.annotations.NotNull;
 import top.midream.ddoor.DDoorPlugin;
 import top.midream.ddoor.door.DoorRecord;
-import top.midream.ddoor.door.DoorBlocks;
 import top.midream.ddoor.door.PairManager;
 import top.midream.ddoor.door.PortalRegistry;
 import top.midream.ddoor.util.Msg;
@@ -22,7 +36,7 @@ import java.util.List;
 public class DDoorCommand implements CommandExecutor, TabCompleter {
 
     private static final List<String> SUBS = List.of(
-            "list", "tp", "rename", "unlink", "delete", "key", "stats", "reload", "link");
+            "list", "tp", "rename", "unlink", "delete", "key", "stats", "reload", "link", "gui");
 
     private final DDoorPlugin plugin;
     private final PortalRegistry registry;
@@ -53,21 +67,35 @@ public class DDoorCommand implements CommandExecutor, TabCompleter {
             case "stats" -> stats(sender);
             case "reload" -> reload(sender);
             case "link" -> link(sender);
+            case "gui" -> gui(sender);
             default -> usage(sender);
         }
         return true;
     }
 
+    private void gui(CommandSender sender) {
+        if (!sender.hasPermission("ddoor.gui")) {
+            msg.send(sender, "cmd.no-permission");
+            return;
+        }
+        if (!(sender instanceof Player player)) {
+            msg.send(sender, "cmd.player-only");
+            return;
+        }
+        plugin.menu().open(player);
+    }
+
     private void usage(CommandSender sender) {
         msg.send(sender, "cmd.usage-header");
-        sender.sendMessage(Msg.mm("<gray>/ddoor list " + (sender.hasPermission("ddoor.list.others") ? "[-a]" : "")
-                + " <dark_gray>— 门对列表</dark_gray></gray>"));
-        sender.sendMessage(Msg.mm("<gray>/ddoor tp <门名> <dark_gray>— 传送到门</dark_gray></gray>"));
-        sender.sendMessage(Msg.mm("<gray>/ddoor rename <门名> <新名> <dark_gray>— 重命名</dark_gray></gray>"));
-        sender.sendMessage(Msg.mm("<gray>/ddoor unlink <门名> <dark_gray>— 解除配对</dark_gray></gray>"));
-        sender.sendMessage(Msg.mm("<gray>/ddoor link <dark_gray>— 免钥匙绑定模式（右键两扇门）</dark_gray></gray>"));
+        msg.sendRaw(sender, "cmd.usage-list", "flags",
+                sender.hasPermission("ddoor.list.others") ? " [-a]" : "");
+        msg.sendRaw(sender, "cmd.usage-tp");
+        msg.sendRaw(sender, "cmd.usage-rename");
+        msg.sendRaw(sender, "cmd.usage-unlink");
+        msg.sendRaw(sender, "cmd.usage-link");
+        msg.sendRaw(sender, "cmd.usage-gui");
         if (sender.hasPermission("ddoor.admin")) {
-            sender.sendMessage(Msg.mm("<gray>/ddoor delete <门名> · key [数量] [玩家] · stats · reload</gray>"));
+            msg.sendRaw(sender, "cmd.usage-admin");
         }
     }
 
@@ -115,18 +143,7 @@ public class DDoorCommand implements CommandExecutor, TabCompleter {
         }
         DoorRecord door = findDoor(sender, args[1]);
         if (door == null) return;
-        var world = Bukkit.getWorld(door.world());
-        if (world == null) {
-            msg.send(sender, "tp.world-denied");
-            return;
-        }
-        BlockFace facing = door.facing();
-        Location dest = new Location(world,
-                door.x() + 0.5 + facing.getModX(),
-                door.y(),
-                door.z() + 0.5 + facing.getModZ());
-        dest.setYaw(yawOf(facing));
-        player.teleportAsync(dest);
+        plugin.engine().commandTeleport(player, door);
     }
 
     private void rename(CommandSender sender, String[] args) {
@@ -146,7 +163,7 @@ public class DDoorCommand implements CommandExecutor, TabCompleter {
         }
         String newName = String.join(" ", List.of(args).subList(2, args.length)).trim();
         if (newName.isEmpty() || newName.length() > 16) {
-            sender.sendMessage(Msg.mm("<red>门名长度需在 1~16 字符之间</red>"));
+            msg.send(sender, "cmd.rename-length");
             return;
         }
         String old = door.name();
@@ -190,7 +207,7 @@ public class DDoorCommand implements CommandExecutor, TabCompleter {
         DoorRecord door = findDoor(sender, args[1]);
         if (door == null) return;
         pairs.removeDoor(door, false);
-        sender.sendMessage(Msg.mm("<green>已删除门记录：" + door.name() + "</green>"));
+        msg.send(sender, "cmd.deleted", "name", door.name());
     }
 
     private void key(CommandSender sender, String[] args) {
@@ -210,7 +227,7 @@ public class DDoorCommand implements CommandExecutor, TabCompleter {
         if (args.length >= 3) {
             target = Bukkit.getPlayer(args[2]);
             if (target == null) {
-                sender.sendMessage(Msg.mm("<red>玩家不在线</red>"));
+                msg.send(sender, "cmd.player-offline");
                 return;
             }
         }
@@ -261,8 +278,7 @@ public class DDoorCommand implements CommandExecutor, TabCompleter {
             msg.send(player, "link.session-cancelled");
             return;
         }
-        sender.sendMessage(Msg.mm(
-                "<green>免钥匙绑定模式：右键第一扇门，再右键第二扇门。再次输入 /ddoor link 取消。</green>"));
+        msg.send(player, "link.mode-start", "seconds", plugin.cfg().sessionTimeoutSeconds);
     }
 
     private DoorRecord findDoor(CommandSender sender, String name) {
@@ -279,16 +295,6 @@ public class DDoorCommand implements CommandExecutor, TabCompleter {
 
     private boolean isSelf(CommandSender sender, DoorRecord door) {
         return sender instanceof Player p && door.owner().equals(p.getUniqueId());
-    }
-
-    private float yawOf(BlockFace face) {
-        return switch (face) {
-            case SOUTH -> 0f;
-            case WEST -> 90f;
-            case NORTH -> 180f;
-            case EAST -> 270f;
-            default -> 0f;
-        };
     }
 
     @Override

@@ -1,3 +1,20 @@
+/*
+ * DokodemoDoor — pair-based cross-world door portals for Minecraft.
+ * Copyright (C) 2026 qs5668
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
 package top.midream.ddoor.teleport;
 
 import org.bukkit.Bukkit;
@@ -116,7 +133,7 @@ public class TeleportEngine {
         to.setYaw(yawOf(dst.facing()));
         to.setPitch(0f);
 
-        player.teleportAsync(to).thenAccept(ok -> {
+        plugin.text().teleport(player, to).thenAccept(ok -> {
             if (Boolean.TRUE.equals(ok)) {
                 Fx.tpArrive(to);
                 entry.incrementUses();
@@ -163,7 +180,7 @@ public class TeleportEngine {
         if (!feet.isPassable()) return false;
         Block head = feet.getRelative(BlockFace.UP);
         if (!head.isPassable()) return false;
-        return feet.getRelative(BlockFace.DOWN).isSolid();
+        return feet.getRelative(BlockFace.DOWN).getType().isSolid();
     }
 
     private Location center(Block block) {
@@ -176,7 +193,35 @@ public class TeleportEngine {
     }
 
     private void action(Player player, String key, Object... kv) {
-        player.sendActionBar(msg.prefixed(key, kv));
+        plugin.text().actionBar(player, msg.prefixed(key, kv));
+    }
+
+    /**
+     * Direct teleport to a door's front (command/GUI path). Unlike the
+     * walk-through chain this trusts the caller's permission checks.
+     */
+    public void commandTeleport(Player player, DoorRecord door) {
+        World world = Bukkit.getWorld(door.world());
+        if (world == null) {
+            msg.send(player, "tp.world-denied");
+            return;
+        }
+        BlockFace facing = door.facing();
+        Location dest = new Location(world,
+                door.x() + 0.5 + facing.getModX(),
+                door.y(),
+                door.z() + 0.5 + facing.getModZ());
+        dest.setYaw(yawOf(facing));
+        dest.setPitch(0f);
+        lastTeleport.put(player.getUniqueId(), System.currentTimeMillis());
+        plugin.text().teleport(player, dest).thenAccept(ok -> {
+            if (Boolean.TRUE.equals(ok)) {
+                door.incrementUses();
+                pairs.persist(door);
+                Fx.tpArrive(dest);
+                action(player, "tp.success", "world", world.getName());
+            }
+        });
     }
 
     private static float yawOf(BlockFace face) {
