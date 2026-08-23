@@ -1,0 +1,57 @@
+# DDoor English messages (MiniMessage supported)
+prefix: "<gradient:#b388ff:#6ea8fe><b>DokodemoDoor</b></gradient> <dark_gray>»</dark_gray> <gray>"
+
+key:
+  name: "<bold><gradient:#b388ff:#6ea8fe>Door Key</gradient></bold>"
+  lore:
+    - "<dark_gray>Right-click two doors to link them</dark_gray>"
+    - "<dark_gray>Consumes 1 key on success</dark_gray>"
+
+link:
+  first-selected: "<green>First door selected. Right-click the second door within <gold>{seconds}</gold>s</green>"
+  second-selected: "<green>Linked! The doors are now connected — <gold>{name}</gold></green>"
+  timeout: "<red>Pairing session timed out</red>"
+  same-door: "<red>A door cannot pair with itself</red>"
+  already-paired: "<yellow>This door is already linked — re-linking will break the old pair</yellow>"
+  already-paired-confirm: "<yellow>Old pair removed. This door can be linked again</yellow>"
+  limit-reached: "<red>You reached your door pair limit (<gold>{limit}</gold>)</red>"
+  world-denied: "<red>Doors are not allowed in this world</red>"
+  not-a-door: "<red>Right-click a door block</red>"
+  unlink-cooldown: "<red>This door was just unlinked. Wait <gold>{seconds}</gold>s to re-link</red>"
+  session-cancelled: "<gray>Pairing session cancelled</gray>"
+
+tp:
+  cooldown: "<red>Teleporting too fast, wait a moment…</red>"
+  no-permission: "<red>You don't have permission to use doors</red>"
+  pair-broken: "<red>The other door is gone. This door is now unlinked</red>"
+  world-denied: "<red>The destination world is disabled</red>"
+  unsafe: "<red>The other side is blocked. Teleport cancelled</red>"
+  in-vehicle: "<red>Leave your vehicle before entering the door</red>"
+  success: "<light_purple>Through the door → {world}</light_purple>"
+  economy-failed: "<red>Not enough funds ({cost} required)</red>"
+  charged: "<gray>-{cost}</gray>"
+
+unlink:
+  done: "<yellow>Unlinked: <gold>{name}</gold></yellow>"
+  notify-owner: "<yellow>Your door <gold>{name}</gold> was unlinked</yellow>"
+
+break:
+  notify-owner: "<yellow>Your door <gold>{name}</gold> was broken. Its pair has been unlinked</yellow>"
+
+cmd:
+  no-permission: "<red>You don't have permission for this</red>"
+  not-found: "<red>No door named <gold>{name}</gold></red>"
+  player-only: "<red>Player only</red>"
+  reloaded: "<green>Config and messages reloaded (data untouched)</green>"
+  renamed: "<green>Renamed: {old} → <gold>{name}</gold></green>"
+  key-given: "<green>Gave <gold>{amount}</gold> door keys to <gold>{player}</gold></green>"
+  key-received: "<green>Received <gold>{amount}</gold> door keys</green>"
+  list-header: "<gray>── Door pairs (<gold>{count}</gold>) ──</gray>"
+  list-row: "<gray>{index}. <gold>{name}</gold> <dark_gray>({world_a} ↔ {world_b} · {uses} uses)</dark_gray></gray>"
+  list-empty: "<gray>No pairs yet. Place two doors and link them with a Door Key!</gray>"
+  stats-header: "<gray>── Server stats ──</gray>"
+  stats-total: "<gray>Pairs: <gold>{pairs}</gold> · Doors: <gold>{doors}</gold> · Total trips: <gold>{uses}</gold></gray>"
+  usage-header: "<gray>── /ddoor commands ──</gray>"
+
+audit:
+  cleaned: "<gray>Audit done: removed {count} stale door records</gray>"

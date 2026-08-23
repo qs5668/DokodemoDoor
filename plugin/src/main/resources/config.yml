@@ -1,0 +1,51 @@
+# ================= DDoor 任意门 DokodemoDoor =================
+# 文档站: https://dokodemodoor.plugin.midream.top
+
+language: zh_CN          # zh_CN / en_US
+
+key:
+  item: AMETHYST_SHARD   # 钥匙基底物品
+  name: "门之钥"          # 显示名（支持 MiniMessage）
+  custom-model-data: 21001
+  craftable: true        # 是否启用合成配方
+  recipe-output: 2       # 单次合成产出数量
+
+teleport:
+  cooldown-seconds: 3    # 玩家级传送冷却
+  fade-effect: true      # 传送瞬间屏幕渐暗过渡
+  anti-fall-ticks: 40    # 落点抗性时长（防加载延迟摔伤，0 关闭）
+  deny-vehicles: true    # 骑乘状态禁止传送
+
+pairing:
+  session-timeout-seconds: 60  # 待配对会话 TTL
+  default-limit: 3             # 无 ddoor.limit.<n> 时的门对上限
+  unlink-cooldown-seconds: 10  # 同一门解绑后的再绑定冷却
+
+visual:
+  idle-particle: true    # 待机粒子开关
+  particle-range: 32     # 粒子渲染半径（格）
+  sound-on-teleport: true
+
+worlds:
+  mode: blacklist        # blacklist / whitelist
+  list: []               # 世界名列表
+
+economy:
+  enabled: false         # 需要 Vault；未安装自动失效
+  create-cost: 0.0       # 配对成功收取
+  use-cost: 0.0          # 每次穿越收取
+
+storage:
+  type: sqlite           # sqlite / mysql
+  mysql:
+    host: "localhost"
+    port: 3306
+    database: "ddoor"
+    username: "root"
+    password: ""
+
+maintenance:
+  audit-interval-seconds: 300  # 全量对账兜底周期（校验门方块仍存在）
+
+hooks:
+  placeholderapi: true   # 安装 PAPI 时注册占位符

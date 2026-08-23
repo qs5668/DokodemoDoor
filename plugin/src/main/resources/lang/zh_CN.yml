@@ -1,0 +1,57 @@
+# DDoor 中文文案（支持 MiniMessage）
+prefix: "<gradient:#b388ff:#6ea8fe><b>任意门</b></gradient> <dark_gray>»</dark_gray> <gray>"
+
+key:
+  name: "<bold><gradient:#b388ff:#6ea8fe>门之钥</gradient></bold>"
+  lore:
+    - "<dark_gray>右键两扇门，将它们配对</dark_gray>"
+    - "<dark_gray>配对成功后消耗 1 把</dark_gray>"
+
+link:
+  first-selected: "<green>已选中第一扇门，请在 <gold>{seconds}</gold> 秒内右键第二扇门完成配对</green>"
+  second-selected: "<green>配对成功！两扇门已互通——<gold>{name}</gold></green>"
+  timeout: "<red>配对超时，会话已取消</red>"
+  same-door: "<red>不能把门和它自己配对</red>"
+  already-paired: "<yellow>这扇门已配对——重新绑定将解除旧配对</yellow>"
+  already-paired-confirm: "<yellow>已解除旧配对，这扇门现在可以重新绑定</yellow>"
+  limit-reached: "<red>你的门对数量已达上限（<gold>{limit}</gold> 对）</red>"
+  world-denied: "<red>这个世界不允许创建任意门</red>"
+  not-a-door: "<red>请右键一扇「门」方块</red>"
+  unlink-cooldown: "<red>这扇门刚被解绑，需等待 <gold>{seconds}</gold> 秒后才能重新绑定</red>"
+  session-cancelled: "<gray>已取消当前配对会话</gray>"
+
+tp:
+  cooldown: "<red>传送冷却中，请稍候…</red>"
+  no-permission: "<red>你没有使用任意门的权限</red>"
+  pair-broken: "<red>对侧门已失效，本门已转为未配对状态</red>"
+  world-denied: "<red>目标世界已被禁用</red>"
+  unsafe: "<red>对侧落点异常（被方块围堵），传送取消</red>"
+  in-vehicle: "<red>请先离开载具再穿门</red>"
+  success: "<light_purple>穿过任意门 → {world}</light_purple>"
+  economy-failed: "<red>余额不足（需要 {cost}）</red>"
+  charged: "<gray>-{cost}</gray>"
+
+unlink:
+  done: "<yellow>已解除配对：<gold>{name}</gold></yellow>"
+  notify-owner: "<yellow>你的门「<gold>{name}</gold>」的配对被解除</yellow>"
+
+break:
+  notify-owner: "<yellow>你的门「<gold>{name}</gold>」被破坏，其配对已解除</yellow>"
+
+cmd:
+  no-permission: "<red>你没有权限执行此操作</red>"
+  not-found: "<red>未找到名为「<gold>{name}</gold>」的门</red>"
+  player-only: "<red>此命令仅玩家可用</red>"
+  reloaded: "<green>配置与文案已重载（数据未受影响）</green>"
+  renamed: "<green>已重命名：<old> → <gold>{name}</gold></green>"
+  key-given: "<green>已向 <gold>{player}</gold> 发放 <gold>{amount}</gold> 把门之钥</green>"
+  key-received: "<green>获得 <gold>{amount}</gold> 把门之钥</green>"
+  list-header: "<gray>── 门对列表（<gold>{count}</gold>）──</gray>"
+  list-row: "<gray>{index}. <gold>{name}</gold> <dark_gray>({world_a} ↔ {world_b} · {uses} 次)</dark_gray></gray>"
+  list-empty: "<gray>还没有门对。放两扇门，用门之钥依次右键即可创建！</gray>"
+  stats-header: "<gray>── 全服统计 ──</gray>"
+  stats-total: "<gray>门对总数: <gold>{pairs}</gold> · 门总数: <gold>{doors}</gold> · 累计穿越: <gold>{uses}</gold></gray>"
+  usage-header: "<gray>── /ddoor 命令 ──</gray>"
+
+audit:
+  cleaned: "<gray>对账完成：清理 {count} 条失配门记录</gray>"
