@@ -12,8 +12,10 @@
 
 ## 文档
 
-- [插件策划案](https://qs5668.github.io/DokodemoDoor/proposal/) — 完整方案设计
-- [玩家玩法指南](https://qs5668.github.io/DokodemoDoor/player-guide/) — 面向玩家的上手指南
+- 官网：https://www.midream.top
+- 插件文档站：<https://dokodemodoor.plugin.midream.top/>
+- [插件策划案](https://dokodemodoor.plugin.midream.top/proposal/) — 完整方案设计
+- [玩家玩法指南](https://dokodemodoor.plugin.midream.top/player-guide/) — 面向玩家的上手指南
 
 ## 核心设计
 
