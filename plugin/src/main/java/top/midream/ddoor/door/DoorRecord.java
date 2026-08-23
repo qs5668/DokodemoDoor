@@ -36,6 +36,7 @@ public class DoorRecord {
     private long uses;
     private boolean enabled = true;
     private boolean entities = false;
+    private long expiresAt = 0; // pair lifetime deadline (entity tiers), 0 = never
 
     public DoorRecord(UUID id, String name, UUID owner, String world, int x, int y, int z,
                       BlockFace facing, UUID pairedId, long createdAt, long uses) {
@@ -50,6 +51,12 @@ public class DoorRecord {
     public DoorRecord(UUID id, String name, UUID owner, String world, int x, int y, int z,
                       BlockFace facing, UUID pairedId, long createdAt, long uses, boolean enabled,
                       boolean entities) {
+        this(id, name, owner, world, x, y, z, facing, pairedId, createdAt, uses, enabled, entities, 0L);
+    }
+
+    public DoorRecord(UUID id, String name, UUID owner, String world, int x, int y, int z,
+                      BlockFace facing, UUID pairedId, long createdAt, long uses, boolean enabled,
+                      boolean entities, long expiresAt) {
         this.id = id;
         this.name = name;
         this.owner = owner;
@@ -63,6 +70,7 @@ public class DoorRecord {
         this.uses = uses;
         this.enabled = enabled;
         this.entities = entities;
+        this.expiresAt = expiresAt;
     }
 
     public UUID id() { return id; }
@@ -84,6 +92,13 @@ public class DoorRecord {
     public void enabled(boolean enabled) { this.enabled = enabled; }
     public boolean entities() { return entities; }
     public void entities(boolean entities) { this.entities = entities; }
+    public long expiresAt() { return expiresAt; }
+    public void expiresAt(long expiresAt) { this.expiresAt = expiresAt; }
 
     public boolean isPaired() { return pairedId != null; }
+
+    /** True when a tiered pair has run out of lifetime. */
+    public boolean expired() {
+        return expiresAt > 0 && System.currentTimeMillis() >= expiresAt;
+    }
 }

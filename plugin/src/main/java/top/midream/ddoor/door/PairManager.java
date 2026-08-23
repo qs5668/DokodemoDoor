@@ -42,7 +42,7 @@ import java.util.UUID;
  */
 public class PairManager {
 
-    public record Session(Block anchor, long deadline, boolean freeKey, boolean entityPair) {}
+    public record Session(Block anchor, long deadline, boolean freeKey, boolean entityPair, int hours) {}
 
     private final DDoorPlugin plugin;
     private final PortalRegistry registry;
@@ -75,10 +75,6 @@ public class PairManager {
             return;
         }
         boolean entityKey = key != null && keyItem.isEntityKey(key);
-        if (entityKey && keyItem.expired(key)) {
-            msg.send(player, "link.key-expired");
-            return;
-        }
         Block anchor = DoorBlocks.anchorOf(clicked);
         if (anchor == null || DoorBlocks.isFloatingUpper(clicked)) {
             msg.send(player, "link.not-a-door");
@@ -110,7 +106,8 @@ public class PairManager {
                 return;
             }
             sessions.put(player.getUniqueId(), new Session(anchor, System.currentTimeMillis()
-                    + cfg().sessionTimeoutSeconds * 1000L, key == null, entityKey));
+                    + cfg().sessionTimeoutSeconds * 1000L, key == null, entityKey,
+                    entityKey ? keyItem.hoursOf(key) : 0));
             msg.send(player, entityKey ? "link.first-selected-entity" : "link.first-selected",
                     "seconds", cfg().sessionTimeoutSeconds);
             Fx.pendingSelect(anchor.getLocation());
@@ -151,6 +148,13 @@ public class PairManager {
         first.entities(session.entityPair());
         secondRec.entities(session.entityPair());
 
+        // tiered lifetime: entity pairs expire after the key's tier from linking; 0 = permanent
+        long expiresAt = session.entityPair() && session.hours() > 0
+                ? System.currentTimeMillis() + session.hours() * 3600_000L
+                : 0L;
+        first.expiresAt(expiresAt);
+        secondRec.expiresAt(expiresAt);
+
         String pairName = defaultName(player);
         first.name(pairName);
         secondRec.name(pairName);
@@ -162,8 +166,13 @@ public class PairManager {
             key.setAmount(key.getAmount() - 1);
         }
         Fx.pairSuccess(locOf(first), locOf(secondRec), cfg().soundOnTeleport);
-        msg.send(player, session.entityPair() ? "link.second-selected-entity" : "link.second-selected",
-                "name", pairName);
+        if (session.entityPair()) {
+            msg.send(player, "link.second-selected-entity", "name", pairName,
+                    "hours", msg.raw(session.hours() > 0
+                            ? "key-entity.hours" : "key-entity.permanent", "hours", session.hours()));
+        } else {
+            msg.send(player, "link.second-selected", "name", pairName);
+        }
         plugin.logs().log(first, player.getName(), top.midream.ddoor.log.DoorLog.ACTION_LINK);
     }
 
@@ -206,9 +215,11 @@ public class PairManager {
                 : notify.sender().getName();
         plugin.logs().log(door, actor, top.midream.ddoor.log.DoorLog.ACTION_UNLINK);
         door.pairedId(null);
+        door.expiresAt(0);
         persist(door);
         if (other != null) {
             other.pairedId(null);
+            other.expiresAt(0);
             persist(other);
             notifyOwner(other);
             if (applyCooldown) putAnchorCooldown(other);
@@ -217,6 +228,37 @@ public class PairManager {
         if (notify != null) {
             msg.send(notify.sender(), "unlink.done", "name", door.name());
         }
+    }
+
+    /**
+     * A tiered entity pair ran out of lifetime: dissolve it, notify both
+     * owners if online, and start the re-link cooldown on both anchors.
+     */
+    public void unlinkExpired(DoorRecord door) {
+        if (!door.isPaired()) return;
+        DoorRecord other = registry.byId(door.pairedId());
+        plugin.logs().log(door, "System", top.midream.ddoor.log.DoorLog.ACTION_UNLINK);
+        door.pairedId(null);
+        door.expiresAt(0);
+        persist(door);
+        if (other != null) {
+            other.pairedId(null);
+            other.expiresAt(0);
+            persist(other);
+        }
+        Player ownerA = Bukkit.getPlayer(door.owner());
+        if (ownerA != null && ownerA.isOnline()) {
+            msg.send(ownerA, "unlink.expired-owner", "name", door.name());
+        }
+        if (other != null) {
+            Player ownerB = Bukkit.getPlayer(other.owner());
+            if (ownerB != null && ownerB.isOnline()
+                    && (ownerA == null || !ownerB.equals(ownerA))) {
+                msg.send(ownerB, "unlink.expired-owner", "name", door.name());
+            }
+        }
+        putAnchorCooldown(door);
+        if (other != null) putAnchorCooldown(other);
     }
 
     /** Remove a door record entirely (block gone or admin delete). Counterpart becomes unpaired. */
@@ -260,7 +302,7 @@ public class PairManager {
         return sessions;
     }
 
-    /** Periodic cleanup of expired sessions and cooldowns. */
+    /** Periodic cleanup of expired sessions, cooldowns and timed-out door pairs. */
     public void tickCleanup() {
         long now = System.currentTimeMillis();
         Iterator<Map.Entry<Long, Long>> cd = unlinkCooldowns.entrySet().iterator();
@@ -268,6 +310,12 @@ public class PairManager {
             if (cd.next().getValue() < now) cd.remove();
         }
         sessions.entrySet().removeIf(e -> e.getValue().deadline() < now);
+        // sweep tiered pairs that ran out of lifetime (each pair handled once)
+        for (DoorRecord door : registry.all()) {
+            if (!door.isPaired() || door.expiresAt() <= 0 || now < door.expiresAt()) continue;
+            if (door.id().compareTo(door.pairedId()) > 0) continue; // counterpart handles this pair
+            unlinkExpired(door);
+        }
     }
 
     public int limitOf(Player player) {

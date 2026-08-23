@@ -125,6 +125,12 @@ public class TeleportEngine {
             msg.send(player, "tp.disabled", "name", entry.name());
             return;
         }
+        // gate 3.6: tiered entity pair ran out of lifetime (cleanup sweeps within a second)
+        if (entry.expired() || dst.expired()) {
+            pairs.unlinkExpired(entry);
+            msg.send(player, "tp.pair-expired", "name", entry.name());
+            return;
+        }
         // gate 4: destination world usable
         World world = Bukkit.getWorld(dst.world());
         if (world == null || (!player.hasPermission("ddoor.bypass.world") && !pairs.worldAllowed(dst.world()))) {

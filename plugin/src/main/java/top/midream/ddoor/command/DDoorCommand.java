@@ -28,6 +28,7 @@ import top.midream.ddoor.DDoorPlugin;
 import top.midream.ddoor.door.DoorRecord;
 import top.midream.ddoor.door.PairManager;
 import top.midream.ddoor.door.PortalRegistry;
+import top.midream.ddoor.key.KeyItem;
 import top.midream.ddoor.util.Msg;
 
 import java.util.ArrayList;
@@ -215,7 +216,8 @@ public class DDoorCommand implements CommandExecutor, TabCompleter {
             msg.send(sender, "cmd.no-permission");
             return;
         }
-        // /ddoor key [normal|entity] [amount] [player] — type is optional (legacy: key [amount] [player])
+        // /ddoor key [normal|entity] [hours] [amount] [player] — entity keys carry
+        // the pair lifetime tier in hours (0 = permanent); defaults to 48h legacy.
         boolean entity = false;
         int idx = 1;
         if (args.length >= 2) {
@@ -226,6 +228,20 @@ public class DDoorCommand implements CommandExecutor, TabCompleter {
             } else if (first.equals("normal") || first.equals("n")) {
                 idx = 2;
             }
+        }
+        int hours = KeyItem.LEGACY_HOURS;
+        if (entity && args.length > idx) {
+            try {
+                hours = Integer.parseInt(args[idx]);
+            } catch (NumberFormatException e) {
+                msg.send(sender, "cmd.invalid-hours");
+                return;
+            }
+            if (hours < 0 || hours > 100000) {
+                msg.send(sender, "cmd.invalid-hours");
+                return;
+            }
+            idx++;
         }
         int amount = 1;
         Player target = sender instanceof Player p ? p : null;
@@ -248,12 +264,15 @@ public class DDoorCommand implements CommandExecutor, TabCompleter {
             return;
         }
         amount = Math.max(1, Math.min(64, amount));
-        target.getInventory().addItem(entity ? plugin.keyItem().createEntity(amount)
+        target.getInventory().addItem(entity ? plugin.keyItem().createEntity(amount, hours)
                 : plugin.keyItem().create(amount));
+        String lifetime = hours > 0
+                ? msg.raw("key-entity.hours", "hours", hours) : msg.raw("key-entity.permanent");
         msg.send(sender, entity ? "cmd.key-given-entity" : "cmd.key-given",
-                "player", target.getName(), "amount", amount);
+                "player", target.getName(), "amount", amount, "lifetime", lifetime);
         if (!target.equals(sender)) {
-            msg.send(target, entity ? "cmd.key-received-entity" : "cmd.key-received", "amount", amount);
+            msg.send(target, entity ? "cmd.key-received-entity" : "cmd.key-received",
+                    "amount", amount, "lifetime", lifetime);
         }
     }
 
@@ -358,6 +377,14 @@ public class DDoorCommand implements CommandExecutor, TabCompleter {
                     }
                 }
             }
+        } else if (args.length == 3 && args[0].equalsIgnoreCase("key")
+                && (args[1].equalsIgnoreCase("entity") || args[1].equalsIgnoreCase("e"))
+                && sender.hasPermission("ddoor.admin")) {
+            for (int tier : KeyItem.ENTITY_TIERS) {
+                String s = String.valueOf(tier);
+                if (s.startsWith(args[2])) out.add(s);
+            }
+            if ("0".startsWith(args[2])) out.add("0");
         }
         return out;
     }

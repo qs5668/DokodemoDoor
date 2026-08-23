@@ -52,7 +52,8 @@ public class MysqlStore implements DoorStore {
               created_at BIGINT NOT NULL,
               uses BIGINT NOT NULL DEFAULT 0,
               enabled TINYINT NOT NULL DEFAULT 1,
-              entity_support TINYINT NOT NULL DEFAULT 0
+              entity_support TINYINT NOT NULL DEFAULT 0,
+              expires_at BIGINT NOT NULL DEFAULT 0
             )""";
 
     private static final String SETTINGS_SCHEMA = """
@@ -103,6 +104,7 @@ public class MysqlStore implements DoorStore {
         }
         migrateDoorsEnabled();
         migrateDoorsEntitySupport();
+        migrateDoorsExpiresAt();
     }
 
     /** v1.0.2 installs lack the enabled column — add it without touching data. */
@@ -117,7 +119,7 @@ public class MysqlStore implements DoorStore {
         }
     }
 
-    /** v1.0.5 installs lack the entity_support column — add it without touching data. */
+    /** v1.0.7 installs lack the entity_support column — add it without touching data. */
     private void migrateDoorsEntitySupport() throws SQLException {
         try (PreparedStatement ps = conn.prepareStatement(
                 "SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='ddoor_doors' AND COLUMN_NAME='entity_support'");
@@ -126,6 +128,18 @@ public class MysqlStore implements DoorStore {
         }
         try (Statement st = conn.createStatement()) {
             st.execute("ALTER TABLE ddoor_doors ADD COLUMN entity_support TINYINT NOT NULL DEFAULT 0");
+        }
+    }
+
+    /** v1.0.9 installs lack the expires_at column — add it without touching data. */
+    private void migrateDoorsExpiresAt() throws SQLException {
+        try (PreparedStatement ps = conn.prepareStatement(
+                "SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='ddoor_doors' AND COLUMN_NAME='expires_at'");
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next() && rs.getInt(1) > 0) return;
+        }
+        try (Statement st = conn.createStatement()) {
+            st.execute("ALTER TABLE ddoor_doors ADD COLUMN expires_at BIGINT NOT NULL DEFAULT 0");
         }
     }
 
@@ -143,7 +157,7 @@ public class MysqlStore implements DoorStore {
     @Override
     public void upsert(DoorRecord door) throws Exception {
         try (PreparedStatement ps = conn.prepareStatement(
-                "REPLACE INTO ddoor_doors (id,name,owner,world,x,y,z,facing,paired_id,created_at,uses,enabled,entity_support) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)")) {
+                "REPLACE INTO ddoor_doors (id,name,owner,world,x,y,z,facing,paired_id,created_at,uses,enabled,entity_support,expires_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)")) {
             SqliteStore.bind(ps, door);
             ps.executeUpdate();
         }

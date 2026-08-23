@@ -60,9 +60,9 @@ public class EntityTeleportTask extends BukkitRunnable {
         long now = System.currentTimeMillis();
 
         for (DoorRecord door : plugin.registry().all()) {
-            if (!door.isPaired() || !door.entities() || !door.enabled()) continue;
+            if (!door.isPaired() || !door.entities() || !door.enabled() || door.expired()) continue;
             DoorRecord dst = plugin.registry().byId(door.pairedId());
-            if (dst == null || !dst.enabled()) continue;
+            if (dst == null || !dst.enabled() || dst.expired()) continue;
             World world = Bukkit.getWorld(door.world());
             if (world == null) continue;
             if (!world.isChunkLoaded(door.x() >> 4, door.z() >> 4)) continue;

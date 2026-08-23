@@ -71,8 +71,13 @@ public final class Msg {
         prefix = p == null ? Component.empty() : MM.deserialize(p);
     }
 
-    public String raw(String key) {
-        return lang.getString(key);
+    public String raw(String key, Object... kv) {
+        String raw = lang.getString(key);
+        if (raw == null || kv.length == 0) return raw;
+        for (int i = 0; i + 1 < kv.length; i += 2) {
+            raw = raw.replace("{" + kv[i] + "}", String.valueOf(kv[i + 1]));
+        }
+        return raw;
     }
 
     public org.bukkit.configuration.file.YamlConfiguration getConfiguration() {

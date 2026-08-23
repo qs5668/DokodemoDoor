@@ -34,7 +34,6 @@ public class DDoorConfig {
     public final int entityKeyCustomModelData;
     public final boolean entityKeyCraftable;
     public final int entityKeyRecipeOutput;
-    public final int entityKeyExpireHours;
 
     public final boolean entityEnabled;
     public final int entityCooldownSeconds;
@@ -82,7 +81,6 @@ public class DDoorConfig {
         entityKeyCustomModelData = plugin.getConfig().getInt("entity-key.custom-model-data", 21002);
         entityKeyCraftable = ek.getBoolean("craftable", true);
         entityKeyRecipeOutput = ek.getInt("recipe-output", 1);
-        entityKeyExpireHours = ek.getInt("expire-hours", 48);
 
         ConfigurationSection ent = plugin.getConfig().getConfigurationSection("entity");
         entityEnabled = ent.getBoolean("enabled", true);

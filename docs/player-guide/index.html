@@ -762,14 +762,14 @@ footer {
   <div class="block-head" id="entity-key" style="margin-top: 34px;">
     <div class="tag">ENTITY KEY</div>
     <h2>门之钥·实体，让生物也能穿门</h2>
-    <p class="desc">用「门之钥·实体」配对的门，<strong>玩家和生物都能穿越</strong>——把牛羊赶进门运去新牧场、让宠物跟着你搬家，都行。配方更贵，且<strong>有效期 48 小时</strong>，从合成那一刻起算。</p>
+    <p class="desc">用「门之钥·实体」配对的门，<strong>玩家和生物都能穿越</strong>——把牛羊赶进门运去新牧场、让宠物跟着你搬家，都行。<strong>钥匙本身永不过期</strong>，放在箱子里多久都行；但用它配出的门对有<strong>时限（3h 起步）</strong>，配对那一刻开始计时，<strong>到期自动解绑</strong>，门方块保留、可以重新配对。</p>
   </div>
 
   <div class="demo">
     <div class="demo-head">
       <span class="demo-dot"></span>
       <span class="demo-label">CRAFTING</span>
-      <span class="demo-title">门之钥·实体合成配方 · 把鼠标放到格子上看材料</span>
+      <span class="demo-title">门之钥·实体 基础配方（3h 档） · 把鼠标放到格子上看材料</span>
     </div>
     <div class="demo-body">
       <div class="recipe-row">
@@ -787,12 +787,12 @@ footer {
         <div class="recipe-arrow">➜</div>
         <div class="craft-result-slot">
           <div class="item-icon ekey">实体<br>门钥</div><span class="item-count">1</span>
-          <span class="item-tip">门之钥·实体 · 配对的门玩家与生物均可穿越<span class="en-id">ddoor:entity_key</span></span>
+          <span class="item-tip">门之钥·实体（3h 档）· 配对的门玩家与生物均可穿越，门对时限 3 小时<span class="en-id">ddoor:entity_key</span></span>
         </div>
       </div>
-      <div class="recipe-note">有效期 <b>48 小时</b>（过期时刻直接印在钥匙上） · 一次合成出 <b>1 把</b> · <b>已配对的门不受过期影响</b></div>
+      <div class="recipe-note">合成出 <b>3h 档</b>钥匙 · <b>两把同档合成一把高一档</b>（8 / 12 / 20 / 35 / 42 / 48h） · 门对时限直接印在钥匙上 · <b>钥匙永不过期</b></div>
     </div>
-    <div class="demo-hint">实体钥和普通钥<b>不能混用</b>：普通钥配的门只走玩家，实体钥配的门玩家和生物都能走。配方同样进服<b>自动解锁</b>；若服务器关闭了合成，就只能通过商店购买或管理员发放获得。</div>
+    <div class="demo-hint">实体钥和普通钥<b>不能混用</b>：普通钥配的门只走玩家，实体钥配的门玩家和生物都能走。全部配方进服<b>自动解锁</b>；若服务器关闭了合成，就只能通过商店购买或管理员发放获得。管理员还能发放更长时限的钥匙（0 = 永久门对）。</div>
   </div>
 
   <div class="mats">
@@ -971,8 +971,8 @@ footer {
       <div class="faq-a"><div class="faq-a-inner">用<b>门之钥·实体</b>配对的门就行：玩家照常走，生物走进门框也会被自动送到对面（每只生物 5 秒冷却；正在骑乘或载着乘客的生物不传送）。赶牛羊搬家、带宠物跨世界都很方便。注意两种钥匙不能混用——普通钥只能配普通门。</div></div>
     </div>
     <div class="faq-item">
-      <button class="faq-q"><span class="q-mark">Q</span>门之钥·实体的 48 小时有效期怎么算？<span class="arrow"></span></button>
-      <div class="faq-a"><div class="faq-a-inner">从<b>合成（或管理员发放）那一刻</b>起算，48 小时内要完成配对，过期后钥匙失效、无法再绑新门。过期时刻直接印在钥匙说明上，不用自己算。<b>已经配好的实体门不受过期影响</b>，会一直可用。</div></div>
+      <button class="faq-q"><span class="q-mark">Q</span>门之钥·实体的时限是怎么算的？<span class="arrow"></span></button>
+      <div class="faq-a"><div class="faq-a-inner"><b>钥匙本身永不过期</b>，放着不用可以一直保存。用钥匙配对成功的那一刻起，<b>门对开始计时</b>：合成档位有 3 / 8 / 12 / 20 / 35 / 42 / 48 小时七档（两把同档钥匙合成一把高一档）。时限印在钥匙说明上，GUI 门对列表也能看到剩余时间；<b>到期后门对自动解绑</b>，门方块保留，买把新钥匙重新配对就行。</div></div>
     </div>
     <div class="faq-item">
       <button class="faq-q"><span class="q-mark">Q</span>传送的时候背包东西会掉吗？<span class="arrow"></span></button>

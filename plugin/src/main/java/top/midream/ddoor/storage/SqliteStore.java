@@ -51,7 +51,8 @@ public class SqliteStore implements DoorStore {
               created_at BIGINT NOT NULL,
               uses BIGINT NOT NULL DEFAULT 0,
               enabled INTEGER NOT NULL DEFAULT 1,
-              entity_support INTEGER NOT NULL DEFAULT 0
+              entity_support INTEGER NOT NULL DEFAULT 0,
+              expires_at BIGINT NOT NULL DEFAULT 0
             )""";
 
     private static final String SETTINGS_SCHEMA = """
@@ -96,6 +97,7 @@ public class SqliteStore implements DoorStore {
         }
         migrateDoorsEnabled();
         migrateDoorsEntitySupport();
+        migrateDoorsExpiresAt();
     }
 
     /** v1.0.2 installs lack the enabled column — add it without touching data. */
@@ -110,7 +112,7 @@ public class SqliteStore implements DoorStore {
         }
     }
 
-    /** v1.0.5 installs lack the entity_support column — add it without touching data. */
+    /** v1.0.7 installs lack the entity_support column — add it without touching data. */
     private void migrateDoorsEntitySupport() throws SQLException {
         try (Statement st = conn.createStatement(); ResultSet rs = st.executeQuery("PRAGMA table_info(ddoor_doors)")) {
             while (rs.next()) {
@@ -119,6 +121,18 @@ public class SqliteStore implements DoorStore {
         }
         try (Statement st = conn.createStatement()) {
             st.execute("ALTER TABLE ddoor_doors ADD COLUMN entity_support INTEGER NOT NULL DEFAULT 0");
+        }
+    }
+
+    /** v1.0.9 installs lack the expires_at column — add it without touching data. */
+    private void migrateDoorsExpiresAt() throws SQLException {
+        try (Statement st = conn.createStatement(); ResultSet rs = st.executeQuery("PRAGMA table_info(ddoor_doors)")) {
+            while (rs.next()) {
+                if ("expires_at".equalsIgnoreCase(rs.getString("name"))) return;
+            }
+        }
+        try (Statement st = conn.createStatement()) {
+            st.execute("ALTER TABLE ddoor_doors ADD COLUMN expires_at BIGINT NOT NULL DEFAULT 0");
         }
     }
 
@@ -136,7 +150,7 @@ public class SqliteStore implements DoorStore {
     @Override
     public void upsert(DoorRecord door) throws Exception {
         try (PreparedStatement ps = conn.prepareStatement(
-                "INSERT OR REPLACE INTO ddoor_doors (id,name,owner,world,x,y,z,facing,paired_id,created_at,uses,enabled,entity_support) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)")) {
+                "INSERT OR REPLACE INTO ddoor_doors (id,name,owner,world,x,y,z,facing,paired_id,created_at,uses,enabled,entity_support,expires_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)")) {
             bind(ps, door);
             ps.executeUpdate();
         }
@@ -228,6 +242,7 @@ public class SqliteStore implements DoorStore {
         ps.setLong(11, d.uses());
         ps.setInt(12, d.enabled() ? 1 : 0);
         ps.setInt(13, d.entities() ? 1 : 0);
+        ps.setLong(14, d.expiresAt());
     }
 
     static DoorRecord fromRow(ResultSet rs) throws SQLException {
@@ -244,6 +259,12 @@ public class SqliteStore implements DoorStore {
         } catch (SQLException legacy) {
             // pre-1.0.7 rows before migration completes — entity support defaults to false
         }
+        long expiresAt = 0;
+        try {
+            expiresAt = rs.getLong("expires_at");
+        } catch (SQLException legacy) {
+            // pre-1.0.9 rows before migration completes — doors never expire
+        }
         return new DoorRecord(
                 UUID.fromString(rs.getString("id")),
                 rs.getString("name"),
@@ -255,7 +276,8 @@ public class SqliteStore implements DoorStore {
                 rs.getLong("created_at"),
                 rs.getLong("uses"),
                 enabled,
-                entities);
+                entities,
+                expiresAt);
     }
 
     static void bindLog(PreparedStatement ps, DoorLog l) throws SQLException {

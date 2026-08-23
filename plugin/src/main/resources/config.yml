@@ -13,9 +13,11 @@ key:
 entity-key:              # 门之钥·实体：配对的门玩家与生物均可穿越
   item: AMETHYST_SHARD
   custom-model-data: 21002
-  craftable: true        # false 时仅能通过 /ddoor key entity 发放（适合商店售卖）
-  recipe-output: 1
-  expire-hours: 48       # 有效期（小时），从合成/发放时起算，0 = 永久
+  craftable: true        # false 时仅能通过 /ddoor key entity <小时> [数量] [玩家] 发放（适合商店售卖）
+  recipe-output: 1       # 3h 基础配方单次产出数量
+  # 时限档位固定为 3/8/12/20/35/42/48 小时（两把同档合成一把高一档），
+  # 钥匙本身永不过期；档位时长是配对后门对的可传送时长，到期自动解绑。
+  # 腐竹可用 /ddoor key entity <小时> 发放任意时长（0 = 永久门对）。
 
 entity:                  # 实体传送行为
   enabled: true          # 实体门总开关

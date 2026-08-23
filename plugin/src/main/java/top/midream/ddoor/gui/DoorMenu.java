@@ -475,6 +475,7 @@ public final class DoorMenu {
                 "biome_b", other == null ? "?" : biomeOf(other),
                 "created", DATE.format(new Date(door.createdAt())),
                 "uses", uses,
+                "expires", expiryText(door),
                 "entities", msg.raw(door.entities() ? "gui.entity-on" : "gui.entity-off"));
         return item(door.entities() ? Material.DARK_OAK_DOOR : Material.OAK_DOOR,
                 msg.parse("gui.door-name", "name", door.name()), lore);
@@ -495,6 +496,7 @@ public final class DoorMenu {
         List<Component> lore = msg.parseList("gui.detail-info-lore",
                 "created", DATE.format(new Date(Math.min(a.createdAt(), b.createdAt()))),
                 "uses", uses,
+                "expires", expiryText(a),
                 "entities", msg.raw(a.entities() ? "gui.entity-on" : "gui.entity-off"),
                 "status", msg.raw(a.enabled() && b.enabled()
                         ? "gui.status-enabled" : "gui.status-disabled"));
@@ -535,6 +537,16 @@ public final class DoorMenu {
     }
 
     // ----------------------------------------------------------------- utils
+
+    /** Remaining pair lifetime as text: permanent, whole hours, or minutes. */
+    private String expiryText(DoorRecord door) {
+        if (door.expiresAt() <= 0) return msg.raw("gui.expires-permanent");
+        long ms = door.expiresAt() - System.currentTimeMillis();
+        if (ms <= 0) return msg.raw("gui.expires-minutes", "minutes", 0);
+        long hours = ms / 3600_000L;
+        if (hours >= 1) return msg.raw("gui.expires-hours", "hours", hours);
+        return msg.raw("gui.expires-minutes", "minutes", Math.max(1, ms / 60_000L));
+    }
 
     private String facingText(BlockFace face) {
         String raw = msg.raw("gui.facing-" + face.name().toLowerCase());

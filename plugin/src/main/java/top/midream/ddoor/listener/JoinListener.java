@@ -43,7 +43,9 @@ public class JoinListener implements Listener {
             player.discoverRecipe(plugin.keyItem().recipeKey());
         }
         if (cfg.entityKeyCraftable) {
-            player.discoverRecipe(plugin.keyItem().entityRecipeKey());
+            for (org.bukkit.NamespacedKey key : plugin.keyItem().entityRecipeKeys()) {
+                player.discoverRecipe(key);
+            }
         }
     }
 }
