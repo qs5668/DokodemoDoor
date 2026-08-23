@@ -215,17 +215,29 @@ public class DDoorCommand implements CommandExecutor, TabCompleter {
             msg.send(sender, "cmd.no-permission");
             return;
         }
+        // /ddoor key [normal|entity] [amount] [player] — type is optional (legacy: key [amount] [player])
+        boolean entity = false;
+        int idx = 1;
+        if (args.length >= 2) {
+            String first = args[1].toLowerCase();
+            if (first.equals("entity") || first.equals("e")) {
+                entity = true;
+                idx = 2;
+            } else if (first.equals("normal") || first.equals("n")) {
+                idx = 2;
+            }
+        }
         int amount = 1;
         Player target = sender instanceof Player p ? p : null;
-        if (args.length >= 2) {
+        if (args.length > idx) {
             try {
-                amount = Integer.parseInt(args[1]);
+                amount = Integer.parseInt(args[idx]);
             } catch (NumberFormatException e) {
                 amount = 1;
             }
         }
-        if (args.length >= 3) {
-            target = Bukkit.getPlayer(args[2]);
+        if (args.length > idx + 1) {
+            target = Bukkit.getPlayer(args[idx + 1]);
             if (target == null) {
                 msg.send(sender, "cmd.player-offline");
                 return;
@@ -236,10 +248,12 @@ public class DDoorCommand implements CommandExecutor, TabCompleter {
             return;
         }
         amount = Math.max(1, Math.min(64, amount));
-        target.getInventory().addItem(plugin.keyItem().create(amount));
-        msg.send(sender, "cmd.key-given", "player", target.getName(), "amount", amount);
+        target.getInventory().addItem(entity ? plugin.keyItem().createEntity(amount)
+                : plugin.keyItem().create(amount));
+        msg.send(sender, entity ? "cmd.key-given-entity" : "cmd.key-given",
+                "player", target.getName(), "amount", amount);
         if (!target.equals(sender)) {
-            msg.send(target, "cmd.key-received", "amount", amount);
+            msg.send(target, entity ? "cmd.key-received-entity" : "cmd.key-received", "amount", amount);
         }
     }
 
@@ -331,6 +345,10 @@ public class DDoorCommand implements CommandExecutor, TabCompleter {
             String head = args[1].toLowerCase();
             if (args[0].equalsIgnoreCase("list") && sender.hasPermission("ddoor.list.others") && "-a".startsWith(head)) {
                 out.add("-a");
+            }
+            if (args[0].equalsIgnoreCase("key") && sender.hasPermission("ddoor.admin")) {
+                if ("normal".startsWith(head) || head.isEmpty()) out.add("normal");
+                if ("entity".startsWith(head) || head.isEmpty()) out.add("entity");
             }
             for (DoorRecord d : registry.all()) {
                 if (d.isPaired() && d.name().toLowerCase().startsWith(head)) {

@@ -463,6 +463,9 @@ figure.diagram pre.mermaid {
 .item-icon.iron { background: linear-gradient(135deg, #e2e8f0, #aab4c4); color: #334; }
 .item-icon.ender { background: linear-gradient(135deg, #34d399, #0d9488); }
 .item-icon.key { background: linear-gradient(135deg, #f5d76e, #d4a017); color: #4a3809; }
+.item-icon.pearl { background: linear-gradient(135deg, #2dd4bf, #0f766e); }
+.item-icon.tear { background: linear-gradient(135deg, #d9f99d, #84cc16); color: #2f420a; }
+.item-icon.ekey { background: linear-gradient(135deg, #34d399, #6ea8fe); }
 .item-count {
   position: absolute; right: 3px; bottom: 1px;
   font-family: var(--font-mono); font-size: 12px; font-weight: 700;
@@ -606,7 +609,7 @@ sup a:hover { text-decoration: underline; }
 
 <!-- ================= Hero ================= -->
 <header class="hero">
-  <div class="hero-badge"><span class="dot"></span>PLUGIN PROPOSAL · V1.0.5 SHIPPED · GPL-3.0</div>
+  <div class="hero-badge"><span class="dot"></span>PLUGIN PROPOSAL · V1.0.7 SHIPPED · GPL-3.0</div>
   <h1>《任意门》插件策划案
     <span class="en">DOKODEMO DOOR — PAIRED CROSS-WORLD PORTALS</span>
   </h1>
@@ -615,7 +618,7 @@ sup a:hover { text-decoration: underline; }
     <span class="meta-chip">适配核心 <b>Paper / Leaves / Purpur / Spigot</b></span>
     <span class="meta-chip">版本范围 <b>MC 1.20.1 – 1.21.8</b></span>
     <span class="meta-chip">运行环境 <b>Java 21</b></span>
-    <span class="meta-chip">状态 <b>V1.0.5 已发布 · GPL-3.0 开源</b></span>
+    <span class="meta-chip">状态 <b>V1.0.7 已发布 · GPL-3.0 开源</b></span>
     <span class="meta-chip">定位 <b>生存 / RPG 服务器</b></span>
   </div>
   <figure class="hero-figure">
@@ -623,7 +626,7 @@ sup a:hover { text-decoration: underline; }
     <figcaption>概念图：主世界与下界各立一扇任意门，紫颂粒子在两门之间穿行——这就是插件的全部体验</figcaption>
   </figure>
   <div class="callout violet" style="text-align:left">
-    <b>落地进度（2026-08）：</b>本策划案的规划范围已全部落地并有所超出——V1.0 交付配对系统、六环检测链传送引擎、双存储与粒子音效反馈；V1.0.2 追加 GUI 门对管理菜单，扩展至 Paper 1.20.1+ / Spigot 双平台并以 GPL-3.0 开源；V1.0.5 增加传送触发方式三选一、门对详情页、交互记录与详尽报错。当前版本可在 <a href="https://github.com/qs5668/DokodemoDoor/releases" target="_blank" rel="noopener">GitHub Releases</a> 下载。下文各章保留策划时的设计推演，凡与最新版本不一致之处，以 <a href="https://github.com/qs5668/DokodemoDoor/blob/main/CHANGELOG.md" target="_blank" rel="noopener">CHANGELOG</a> 与已发布功能为准。
+    <b>落地进度（2026-08）：</b>本策划案的规划范围已全部落地并有所超出——V1.0 交付配对系统、六环检测链传送引擎、双存储与粒子音效反馈；V1.0.2 追加 GUI 门对管理菜单，扩展至 Paper 1.20.1+ / Spigot 双平台并以 GPL-3.0 开源；V1.0.5 增加传送触发方式三选一、门对详情页、交互记录与详尽报错；V1.0.7 新增「门之钥·实体」与实体传送引擎，配对的门玩家与生物均可穿越。当前版本可在 <a href="https://github.com/qs5668/DokodemoDoor/releases" target="_blank" rel="noopener">GitHub Releases</a> 下载。下文各章保留策划时的设计推演，凡与最新版本不一致之处，以 <a href="https://github.com/qs5668/DokodemoDoor/blob/main/CHANGELOG.md" target="_blank" rel="noopener">CHANGELOG</a> 与已发布功能为准。
   </div>
 </header>
 
@@ -820,6 +823,7 @@ sup a:hover { text-decoration: underline; }
         <tr><td><span class="code">facing</span></td><td>Enum</td><td>门朝向，决定传送落点在门外哪一侧</td></tr>
         <tr><td><span class="code">paired_id</span></td><td>UUID</td><td>配对门 ID，未配对为空</td></tr>
         <tr><td><span class="code">enabled</span></td><td>boolean</td><td>门对启用开关，停用后暂停传送但不删数据（V1.0.5）</td></tr>
+        <tr><td><span class="code">entity_support</span></td><td>boolean</td><td>是否允许实体穿越，由门之钥类型决定（V1.0.7）</td></tr>
         <tr><td><span class="code">created_at / uses</span></td><td>long</td><td>创建时间戳 / 累计穿越次数（供统计与 PAPI）</td></tr>
       </tbody>
     </table>
@@ -931,6 +935,37 @@ flowchart TD
       <div class="recipe-note">配方成本定位：约等于一组铁 + 4 紫水晶碎片 + 2 末影之眼换 2 对门——前期略有门槛，中期社区交易品，后期日常消耗</div>
     </div>
     <div class="demo-hint">配方通过 <b>prepareCraftEvent</b> 动态注入，无需修改玩家客户端；产物带自定义数据组件标记，杜绝铁砧改名伪造。</div>
+  </div>
+
+  <p><strong>门之钥·实体（V1.0.7 新增）：</strong>独立的第二种钥匙，配方更贵（4 紫水晶碎片 + 4 末影珍珠 + 1 恶魂之泪 → 1 把），用它配对的门<strong>玩家与生物均可穿越</strong>。钥匙自带 <strong>48 小时有效期</strong>（可配置，0 为永久），从合成/发放时起算，过期时刻直接印在物品说明上；过期后无法用于新配对，但已配对的门不受影响。两种钥匙不可混用——普通钥只能配普通门，实体钥只能配实体门，配对中途换钥匙会被明确提示。实体侧传送由周期扫描任务驱动：生物进入门框 AABB 即触发，落点复用玩家侧安全校验，每只生物有独立冷却（默认 5 秒），骑乘中或载有乘客的生物不传送；服主还可开启 named-only 只放行有自定义名字的生物（防怪物借门逃逸）。</p>
+
+  <div class="demo">
+    <div class="demo-head">
+      <span class="demo-dot"></span>
+      <span class="demo-label">INTERACTIVE DEMO 03+</span>
+      <span class="demo-title">门之钥·实体合成配方 · V1.0.7</span>
+    </div>
+    <div class="demo-body">
+      <div class="recipe-row">
+        <div class="craft-grid">
+          <div class="craft-slot"><div class="item-icon amethyst">紫晶</div><span class="item-count">1</span><span class="item-tip">紫水晶碎片<span class="en-id">minecraft:amethyst_shard</span></span></div>
+          <div class="craft-slot"><div class="item-icon pearl">珍珠</div><span class="item-count">1</span><span class="item-tip">末影珍珠<span class="en-id">minecraft:ender_pearl</span></span></div>
+          <div class="craft-slot"><div class="item-icon amethyst">紫晶</div><span class="item-count">1</span><span class="item-tip">紫水晶碎片<span class="en-id">minecraft:amethyst_shard</span></span></div>
+          <div class="craft-slot"><div class="item-icon pearl">珍珠</div><span class="item-count">1</span><span class="item-tip">末影珍珠<span class="en-id">minecraft:ender_pearl</span></span></div>
+          <div class="craft-slot"><div class="item-icon tear">恶魂<br>之泪</div><span class="item-count">1</span><span class="item-tip">恶魂之泪<span class="en-id">minecraft:ghast_tear</span></span></div>
+          <div class="craft-slot"><div class="item-icon pearl">珍珠</div><span class="item-count">1</span><span class="item-tip">末影珍珠<span class="en-id">minecraft:ender_pearl</span></span></div>
+          <div class="craft-slot"><div class="item-icon amethyst">紫晶</div><span class="item-count">1</span><span class="item-tip">紫水晶碎片<span class="en-id">minecraft:amethyst_shard</span></span></div>
+          <div class="craft-slot"><div class="item-icon pearl">珍珠</div><span class="item-count">1</span><span class="item-tip">末影珍珠<span class="en-id">minecraft:ender_pearl</span></span></div>
+          <div class="craft-slot"><div class="item-icon amethyst">紫晶</div><span class="item-count">1</span><span class="item-tip">紫水晶碎片<span class="en-id">minecraft:amethyst_shard</span></span></div>
+        </div>
+        <div class="recipe-arrow">➜</div>
+        <div class="craft-result-slot">
+          <div class="item-icon ekey">实体<br>门钥</div><span class="item-count">1</span>
+          <span class="item-tip">门之钥·实体 · 48h 有效期内可配对，门成后玩家与生物均可穿越<span class="en-id">ddoor:entity_key</span></span>
+        </div>
+      </div>
+      <div class="recipe-note">运营位：高成本 + 限时有效，天然适合作为商店定价商品；关闭 craftable 后仅 <b>/ddoor key entity</b> 可发放</div>
+    </div>
   </div>
 
   <p><strong>数量上限体系：</strong>按权限组配置门对上限（默认普通玩家 3 对、赞助组 10 对、管理员无限），达到上限时钥匙右键给出明确提示。上限检查发生在配对落库前，避免半途消耗钥匙。</p>
@@ -1089,7 +1124,7 @@ flowchart TB
         <tr><td><span class="code">/ddoor rename &lt;门名&gt; &lt;新名&gt;</span></td><td>重命名门</td><td><span class="code">ddoor.rename</span></td><td>门所有者</td></tr>
         <tr><td><span class="code">/ddoor unlink &lt;门名&gt;</span></td><td>解除一扇门的配对</td><td><span class="code">ddoor.unlink</span></td><td>门所有者</td></tr>
         <tr><td><span class="code">/ddoor delete &lt;门名&gt;</span></td><td>删除门的记录（不可恢复）</td><td><span class="code">ddoor.delete</span></td><td>OP</td></tr>
-        <tr><td><span class="code">/ddoor key [数量] [玩家]</span></td><td>发放门之钥</td><td><span class="code">ddoor.admin</span></td><td>OP</td></tr>
+        <tr><td><span class="code">/ddoor key [normal|entity] [数量] [玩家]</span></td><td>发放门之钥（可指定普通钥或实体钥，V1.0.7）</td><td><span class="code">ddoor.admin</span></td><td>OP</td></tr>
         <tr><td><span class="code">/ddoor stats</span></td><td>个人统计（门对数/上限/累计穿越/传送方式/信息档位）；持 <span class="code">ddoor.admin</span> 者追加全服统计</td><td>个人部分无权限要求</td><td>全体</td></tr>
         <tr><td><span class="code">/ddoor reload</span></td><td>重载配置（不动数据）</td><td><span class="code">ddoor.admin</span></td><td>OP</td></tr>
       </tbody>
@@ -1130,6 +1165,17 @@ flowchart TB
   <span class="k">custom-model-data:</span> <span class="v">21001</span>     <span class="cm"># 材质包可覆盖的模型标记</span>
   <span class="k">craftable:</span> <span class="v">true</span>               <span class="cm"># 是否启用合成配方</span>
   <span class="k">recipe-output:</span> <span class="v">2</span>             <span class="cm"># 单次合成产出数量</span>
+
+<span class="k">entity-key:</span>                          <span class="cm"># 门之钥·实体（V1.0.7）：玩家与生物均可穿越</span>
+  <span class="k">custom-model-data:</span> <span class="v">21002</span>
+  <span class="k">craftable:</span> <span class="v">true</span>               <span class="cm"># false 时仅能 /ddoor key entity 发放（商店售卖）</span>
+  <span class="k">recipe-output:</span> <span class="v">1</span>
+  <span class="k">expire-hours:</span> <span class="v">48</span>              <span class="cm"># 有效期（小时），0 = 永久</span>
+
+<span class="k">entity:</span>                              <span class="cm"># 实体传送行为（V1.0.7）</span>
+  <span class="k">enabled:</span> <span class="v">true</span>                  <span class="cm"># 实体门总开关</span>
+  <span class="k">cooldown-seconds:</span> <span class="v">5</span>          <span class="cm"># 单个生物的传送冷却</span>
+  <span class="k">named-only:</span> <span class="v">false</span>             <span class="cm"># true = 只传送有自定义名字的生物</span>
 
 <span class="k">teleport:</span>
   <span class="k">cooldown-seconds:</span> <span class="v">3</span>          <span class="cm"># 玩家级传送冷却</span>
@@ -1218,7 +1264,7 @@ flowchart TB
   </div>
 
   <div class="callout">
-    <b>发布实录：</b>V1.0（2026-08-23）按计划交付全部 M0–M3 范围并开源（GPL-3.0）；V1.0.2 追加 GUI 门对管理菜单、Paper 1.20.1–1.20.6 与 Spigot 双平台构建；V1.0.5 增加传送触发方式三选一、门对详情页、交互记录、详尽报错与门之钥配方自动解锁。三个平台包（paper / paper-1.20 / spigot）均可在 <a href="https://github.com/qs5668/DokodemoDoor/releases" target="_blank" rel="noopener">GitHub Releases</a> 下载，更新明细见 <a href="https://github.com/qs5668/DokodemoDoor/blob/main/CHANGELOG.md" target="_blank" rel="noopener">CHANGELOG</a>。
+    <b>发布实录：</b>V1.0（2026-08-23）按计划交付全部 M0–M3 范围并开源（GPL-3.0）；V1.0.2 追加 GUI 门对管理菜单、Paper 1.20.1–1.20.6 与 Spigot 双平台构建；V1.0.5 增加传送触发方式三选一、门对详情页、交互记录、详尽报错与门之钥配方自动解锁；V1.0.7 新增门之钥·实体（48 小时有效期）与实体传送引擎，修复 ddoor.create 权限校验缺失与骑乘拦截未生效两处缺陷，数据库自动迁移新增 entity_support 列。三个平台包（paper / paper-1.20 / spigot）均可在 <a href="https://github.com/qs5668/DokodemoDoor/releases" target="_blank" rel="noopener">GitHub Releases</a> 下载，更新明细见 <a href="https://github.com/qs5668/DokodemoDoor/blob/main/CHANGELOG.md" target="_blank" rel="noopener">CHANGELOG</a>。
   </div>
 </section>
 

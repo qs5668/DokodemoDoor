@@ -38,8 +38,12 @@ public class JoinListener implements Listener {
     }
 
     public void discover(Player player) {
-        if (plugin.cfg().keyCraftable) {
+        var cfg = plugin.cfg();
+        if (cfg.keyCraftable) {
             player.discoverRecipe(plugin.keyItem().recipeKey());
+        }
+        if (cfg.entityKeyCraftable) {
+            player.discoverRecipe(plugin.keyItem().entityRecipeKey());
         }
     }
 }

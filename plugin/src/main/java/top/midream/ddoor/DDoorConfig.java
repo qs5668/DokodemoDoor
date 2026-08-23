@@ -30,6 +30,16 @@ public class DDoorConfig {
     public final boolean keyCraftable;
     public final int keyRecipeOutput;
 
+    public final Material entityKeyItem;
+    public final int entityKeyCustomModelData;
+    public final boolean entityKeyCraftable;
+    public final int entityKeyRecipeOutput;
+    public final int entityKeyExpireHours;
+
+    public final boolean entityEnabled;
+    public final int entityCooldownSeconds;
+    public final boolean entityNamedOnly;
+
     public final int cooldownSeconds;
     public final boolean fadeEffect;
     public final int antiFallTicks;
@@ -66,6 +76,18 @@ public class DDoorConfig {
         keyCustomModelData = plugin.getConfig().getInt("key.custom-model-data", 21001);
         keyCraftable = plugin.getConfig().getBoolean("key.craftable", true);
         keyRecipeOutput = plugin.getConfig().getInt("key.recipe-output", 2);
+
+        ConfigurationSection ek = plugin.getConfig().getConfigurationSection("entity-key");
+        entityKeyItem = Material.matchMaterial(plugin.getConfig().getString("entity-key.item", "AMETHYST_SHARD"));
+        entityKeyCustomModelData = plugin.getConfig().getInt("entity-key.custom-model-data", 21002);
+        entityKeyCraftable = ek.getBoolean("craftable", true);
+        entityKeyRecipeOutput = ek.getInt("recipe-output", 1);
+        entityKeyExpireHours = ek.getInt("expire-hours", 48);
+
+        ConfigurationSection ent = plugin.getConfig().getConfigurationSection("entity");
+        entityEnabled = ent.getBoolean("enabled", true);
+        entityCooldownSeconds = ent.getInt("cooldown-seconds", 5);
+        entityNamedOnly = ent.getBoolean("named-only", false);
 
         ConfigurationSection tp = plugin.getConfig().getConfigurationSection("teleport");
         cooldownSeconds = tp.getInt("cooldown-seconds", 3);

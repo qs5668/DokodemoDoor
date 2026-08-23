@@ -85,6 +85,11 @@ public class TeleportEngine {
 
     /** Player body entered the frame space of a registered door. */
     public void handleEnter(Player player, DoorRecord entry) {
+        // gate 0: vehicles (deny-vehicles) — covers walk and click modes
+        if (cfg().denyVehicles && player.isInsideVehicle()) {
+            action(player, "tp.in-vehicle");
+            return;
+        }
         // gate 1: cooldown
         if (!player.hasPermission("ddoor.bypass.cooldown")) {
             Long last = lastTeleport.get(player.getUniqueId());
@@ -210,6 +215,13 @@ public class TeleportEngine {
             if (isSafe(probe)) return center(probe);
         }
         return null;
+    }
+
+    /** Safe landing in front of a paired door, or null — shared with entity transport. */
+    public Location safeLandingFor(DoorRecord door) {
+        World world = Bukkit.getWorld(door.world());
+        if (world == null) return null;
+        return safeLanding(world.getBlockAt(door.x(), door.y(), door.z()), door.facing());
     }
 
     private boolean isSafe(Block feet) {

@@ -26,6 +26,7 @@ import org.bukkit.inventory.ItemStack;
 import top.midream.ddoor.DDoorConfig;
 import top.midream.ddoor.DDoorPlugin;
 import top.midream.ddoor.hook.VaultHook;
+import top.midream.ddoor.key.KeyItem;
 import top.midream.ddoor.storage.WriteQueue;
 import top.midream.ddoor.util.Msg;
 import top.midream.ddoor.visual.Fx;
@@ -41,23 +42,26 @@ import java.util.UUID;
  */
 public class PairManager {
 
-    public record Session(Block anchor, long deadline, boolean freeKey) {}
+    public record Session(Block anchor, long deadline, boolean freeKey, boolean entityPair) {}
 
     private final DDoorPlugin plugin;
     private final PortalRegistry registry;
     private final WriteQueue queue;
     private final Msg msg;
     private final VaultHook vault;
+    private final KeyItem keyItem;
 
     private final Map<UUID, Session> sessions = new HashMap<>();
     private final Map<Long, Long> unlinkCooldowns = new HashMap<>();
 
-    public PairManager(DDoorPlugin plugin, PortalRegistry registry, WriteQueue queue, Msg msg, VaultHook vault) {
+    public PairManager(DDoorPlugin plugin, PortalRegistry registry, WriteQueue queue, Msg msg,
+                       VaultHook vault, KeyItem keyItem) {
         this.plugin = plugin;
         this.registry = registry;
         this.queue = queue;
         this.msg = msg;
         this.vault = vault;
+        this.keyItem = keyItem;
     }
 
     private DDoorConfig cfg() {
@@ -66,6 +70,15 @@ public class PairManager {
 
     /** Entry point for a key right-click on a block already known to be a door. */
     public void handleKeyClick(Player player, Block clicked, ItemStack key) {
+        if (!player.hasPermission("ddoor.create")) {
+            msg.send(player, "link.no-permission");
+            return;
+        }
+        boolean entityKey = key != null && keyItem.isEntityKey(key);
+        if (entityKey && keyItem.expired(key)) {
+            msg.send(player, "link.key-expired");
+            return;
+        }
         Block anchor = DoorBlocks.anchorOf(clicked);
         if (anchor == null || DoorBlocks.isFloatingUpper(clicked)) {
             msg.send(player, "link.not-a-door");
@@ -97,8 +110,9 @@ public class PairManager {
                 return;
             }
             sessions.put(player.getUniqueId(), new Session(anchor, System.currentTimeMillis()
-                    + cfg().sessionTimeoutSeconds * 1000L, key == null));
-            msg.send(player, "link.first-selected", "seconds", cfg().sessionTimeoutSeconds);
+                    + cfg().sessionTimeoutSeconds * 1000L, key == null, entityKey));
+            msg.send(player, entityKey ? "link.first-selected-entity" : "link.first-selected",
+                    "seconds", cfg().sessionTimeoutSeconds);
             Fx.pendingSelect(anchor.getLocation());
             return;
         }
@@ -106,6 +120,10 @@ public class PairManager {
         // second door
         if (isSameDoor(session.anchor(), anchor)) {
             msg.send(player, "link.same-door");
+            return;
+        }
+        if (key != null && keyItem.isEntityKey(key) != session.entityPair()) {
+            msg.send(player, "link.key-mismatch");
             return;
         }
         int limit = limitOf(player);
@@ -130,6 +148,8 @@ public class PairManager {
         DoorRecord secondRec = ensureRecord(player, second);
         first.pairedId(secondRec.id());
         secondRec.pairedId(first.id());
+        first.entities(session.entityPair());
+        secondRec.entities(session.entityPair());
 
         String pairName = defaultName(player);
         first.name(pairName);
@@ -142,7 +162,8 @@ public class PairManager {
             key.setAmount(key.getAmount() - 1);
         }
         Fx.pairSuccess(locOf(first), locOf(secondRec), cfg().soundOnTeleport);
-        msg.send(player, "link.second-selected", "name", pairName);
+        msg.send(player, session.entityPair() ? "link.second-selected-entity" : "link.second-selected",
+                "name", pairName);
         plugin.logs().log(first, player.getName(), top.midream.ddoor.log.DoorLog.ACTION_LINK);
     }
 

@@ -337,6 +337,9 @@ section.block { padding: 62px 0 10px; }
 .item-icon.iron { background: linear-gradient(135deg, #e2e8f0, #aab4c4); color: #334; }
 .item-icon.ender { background: linear-gradient(135deg, #34d399, #0d9488); }
 .item-icon.key { background: linear-gradient(135deg, #f5d76e, #d4a017); color: #4a3809; }
+.item-icon.pearl { background: linear-gradient(135deg, #2dd4bf, #0f766e); }
+.item-icon.tear { background: linear-gradient(135deg, #d9f99d, #84cc16); color: #2f420a; }
+.item-icon.ekey { background: linear-gradient(135deg, #34d399, #6ea8fe); }
 .item-count {
   position: absolute; right: 3px; bottom: 1px;
   font-family: var(--font-mono); font-size: 12px; font-weight: 700;
@@ -575,6 +578,7 @@ footer {
       <a href="#intro">是什么</a>
       <a href="#steps">三步上手</a>
       <a href="#key">门之钥</a>
+      <a href="#entity-key">实体钥</a>
       <a href="#travel">传送体验</a>
       <a href="#rules">规则</a>
       <a href="#faq">FAQ</a>
@@ -753,6 +757,70 @@ footer {
       <p>烈焰粉加末影珍珠合成。也可以找牧师村民收购，省得跑下界。</p>
     </div>
   </div>
+
+  <!-- ============ 门之钥·实体 ============ -->
+  <div class="block-head" id="entity-key" style="margin-top: 34px;">
+    <div class="tag">ENTITY KEY</div>
+    <h2>门之钥·实体，让生物也能穿门</h2>
+    <p class="desc">用「门之钥·实体」配对的门，<strong>玩家和生物都能穿越</strong>——把牛羊赶进门运去新牧场、让宠物跟着你搬家，都行。配方更贵，且<strong>有效期 48 小时</strong>，从合成那一刻起算。</p>
+  </div>
+
+  <div class="demo">
+    <div class="demo-head">
+      <span class="demo-dot"></span>
+      <span class="demo-label">CRAFTING</span>
+      <span class="demo-title">门之钥·实体合成配方 · 把鼠标放到格子上看材料</span>
+    </div>
+    <div class="demo-body">
+      <div class="recipe-row">
+        <div class="craft-grid">
+          <div class="craft-slot"><div class="item-icon amethyst">紫晶</div><span class="item-count">1</span><span class="item-tip">紫水晶碎片<span class="en-id">amethyst_shard</span></span></div>
+          <div class="craft-slot"><div class="item-icon pearl">珍珠</div><span class="item-count">1</span><span class="item-tip">末影珍珠<span class="en-id">ender_pearl</span></span></div>
+          <div class="craft-slot"><div class="item-icon amethyst">紫晶</div><span class="item-count">1</span><span class="item-tip">紫水晶碎片<span class="en-id">amethyst_shard</span></span></div>
+          <div class="craft-slot"><div class="item-icon pearl">珍珠</div><span class="item-count">1</span><span class="item-tip">末影珍珠<span class="en-id">ender_pearl</span></span></div>
+          <div class="craft-slot"><div class="item-icon tear">恶魂<br>之泪</div><span class="item-count">1</span><span class="item-tip">恶魂之泪<span class="en-id">ghast_tear</span></span></div>
+          <div class="craft-slot"><div class="item-icon pearl">珍珠</div><span class="item-count">1</span><span class="item-tip">末影珍珠<span class="en-id">ender_pearl</span></span></div>
+          <div class="craft-slot"><div class="item-icon amethyst">紫晶</div><span class="item-count">1</span><span class="item-tip">紫水晶碎片<span class="en-id">amethyst_shard</span></span></div>
+          <div class="craft-slot"><div class="item-icon pearl">珍珠</div><span class="item-count">1</span><span class="item-tip">末影珍珠<span class="en-id">ender_pearl</span></span></div>
+          <div class="craft-slot"><div class="item-icon amethyst">紫晶</div><span class="item-count">1</span><span class="item-tip">紫水晶碎片<span class="en-id">amethyst_shard</span></span></div>
+        </div>
+        <div class="recipe-arrow">➜</div>
+        <div class="craft-result-slot">
+          <div class="item-icon ekey">实体<br>门钥</div><span class="item-count">1</span>
+          <span class="item-tip">门之钥·实体 · 配对的门玩家与生物均可穿越<span class="en-id">ddoor:entity_key</span></span>
+        </div>
+      </div>
+      <div class="recipe-note">有效期 <b>48 小时</b>（过期时刻直接印在钥匙上） · 一次合成出 <b>1 把</b> · <b>已配对的门不受过期影响</b></div>
+    </div>
+    <div class="demo-hint">实体钥和普通钥<b>不能混用</b>：普通钥配的门只走玩家，实体钥配的门玩家和生物都能走。配方同样进服<b>自动解锁</b>；若服务器关闭了合成，就只能通过商店购买或管理员发放获得。</div>
+  </div>
+
+  <div class="mats">
+    <div class="mat-card">
+      <div class="mat-head">
+        <div class="item-icon pearl">珍珠</div>
+        <span class="mat-name">末影珍珠</span>
+        <span class="mat-qty">×4</span>
+      </div>
+      <p>击杀末影人有几率掉落，和猪灵以物易物也能换到。着急用可以先找村民收购。</p>
+    </div>
+    <div class="mat-card">
+      <div class="mat-head">
+        <div class="item-icon tear">恶魂<br>之泪</div>
+        <span class="mat-name">恶魂之泪</span>
+        <span class="mat-qty">×1</span>
+      </div>
+      <p>下界击杀恶魂掉落。掉落物碰到岩浆会烧毁，建议用弓远程解决。</p>
+    </div>
+    <div class="mat-card">
+      <div class="mat-head">
+        <div class="item-icon amethyst">紫晶</div>
+        <span class="mat-name">紫水晶碎片</span>
+        <span class="mat-qty">×4</span>
+      </div>
+      <p>与普通门之钥共用的基底材料，紫水晶洞里敲紫水晶簇即可获得。</p>
+    </div>
+  </div>
 </section>
 
 <!-- ============ 传送体验 ============ -->
@@ -812,7 +880,7 @@ footer {
 <section class="block" id="rules">
   <div class="block-head">
     <div class="tag">RULES</div>
-    <h2>六条规则，看完少踩坑</h2>
+    <h2>七条规则，看完少踩坑</h2>
     <p class="desc">任意门很自由，但有几条底线规则。都是为了公平和防捣乱，提前知道不吃亏。</p>
   </div>
 
@@ -859,6 +927,13 @@ footer {
         <p>任何人都能穿越你的门——放门的位置就是你的"门禁"。想控制通行，就选个隐蔽或围起来的位置。</p>
       </div>
     </div>
+    <div class="rule-card">
+      <span class="rule-no">07</span>
+      <div>
+        <h4>实体门：生物每只 5 秒一次</h4>
+        <p>用「门之钥·实体」配对的门，生物每只隔 5 秒才能传一次；正在骑乘或载着乘客的生物不会被传送，防止刷屏和载具事故。</p>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -890,6 +965,14 @@ footer {
     <div class="faq-item">
       <button class="faq-q"><span class="q-mark">Q</span>钥匙用完了去哪弄？<span class="arrow"></span></button>
       <div class="faq-a"><div class="faq-a-inner">照上面的配方自己合成（材料都是挖矿日常产出），或者在世界频道喊一声找其他玩家收购——中期之后钥匙会是很热门的交易品。</div></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q"><span class="q-mark">Q</span>怎么让动物、生物也穿门？<span class="arrow"></span></button>
+      <div class="faq-a"><div class="faq-a-inner">用<b>门之钥·实体</b>配对的门就行：玩家照常走，生物走进门框也会被自动送到对面（每只生物 5 秒冷却；正在骑乘或载着乘客的生物不传送）。赶牛羊搬家、带宠物跨世界都很方便。注意两种钥匙不能混用——普通钥只能配普通门。</div></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q"><span class="q-mark">Q</span>门之钥·实体的 48 小时有效期怎么算？<span class="arrow"></span></button>
+      <div class="faq-a"><div class="faq-a-inner">从<b>合成（或管理员发放）那一刻</b>起算，48 小时内要完成配对，过期后钥匙失效、无法再绑新门。过期时刻直接印在钥匙说明上，不用自己算。<b>已经配好的实体门不受过期影响</b>，会一直可用。</div></div>
     </div>
     <div class="faq-item">
       <button class="faq-q"><span class="q-mark">Q</span>传送的时候背包东西会掉吗？<span class="arrow"></span></button>

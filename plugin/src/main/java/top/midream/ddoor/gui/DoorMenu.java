@@ -474,8 +474,10 @@ public final class DoorMenu {
                 "facing_b", other == null ? "?" : facingText(other.facing()),
                 "biome_b", other == null ? "?" : biomeOf(other),
                 "created", DATE.format(new Date(door.createdAt())),
-                "uses", uses);
-        return item(Material.OAK_DOOR, msg.parse("gui.door-name", "name", door.name()), lore);
+                "uses", uses,
+                "entities", msg.raw(door.entities() ? "gui.entity-on" : "gui.entity-off"));
+        return item(door.entities() ? Material.DARK_OAK_DOOR : Material.OAK_DOOR,
+                msg.parse("gui.door-name", "name", door.name()), lore);
     }
 
     private ItemStack doorEndItem(DoorRecord door, String titleKey) {
@@ -493,6 +495,7 @@ public final class DoorMenu {
         List<Component> lore = msg.parseList("gui.detail-info-lore",
                 "created", DATE.format(new Date(Math.min(a.createdAt(), b.createdAt()))),
                 "uses", uses,
+                "entities", msg.raw(a.entities() ? "gui.entity-on" : "gui.entity-off"),
                 "status", msg.raw(a.enabled() && b.enabled()
                         ? "gui.status-enabled" : "gui.status-disabled"));
         return item(Material.BOOK, msg.parse("gui.detail-info-name", "name", a.name()), lore);

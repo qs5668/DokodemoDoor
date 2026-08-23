@@ -10,6 +10,8 @@
 - [x] 玩家玩法指南页
 - [x] 插件 V1.0（配对系统 / 传送引擎 / 存储 / 粒子音效 / 命令树 / 双语文案）
 - [x] V1.0.2（GPL-3.0 开源 / Paper+Spigot 双平台构建 / GUI 门对管理菜单）
+- [x] V1.0.5（传送方式三选一 / 门对详情 / 交互记录 / 详尽报错）
+- [x] V1.0.7（门之钥·实体：玩家与生物通用传送门 / 钥匙 48h 有效期）
 
 ## 下载
 
@@ -34,9 +36,9 @@
 
 ```bash
 cd plugin
-mvn clean package -P paper        # 产物: target/ddoor-1.0.5-paper.jar（MC 1.21.x）
-mvn clean package -P paper-120    # 产物: target/ddoor-1.0.5-paper-1.20.jar（MC 1.20.1–1.20.6）
-mvn clean package -P spigot       # 产物: target/ddoor-1.0.5-spigot.jar（shade Adventure）
+mvn clean package -P paper        # 产物: target/ddoor-1.0.7-paper.jar（MC 1.21.x）
+mvn clean package -P paper-120    # 产物: target/ddoor-1.0.7-paper-1.20.jar（MC 1.20.1–1.20.6）
+mvn clean package -P spigot       # 产物: target/ddoor-1.0.7-spigot.jar（shade Adventure）
 ```
 
 要求 JDK 21+。默认 profile 为 paper。依赖（paper-api / spigot-api、VaultAPI、PlaceholderAPI）均为 provided 作用域，运行时由服务器或对应插件提供；Spigot 包将 Adventure 序列化器 shade 并重定位到 `top.midream.ddoor.libs.kyori`。1.20 包以 paper-api 1.20.1 为最低基线编译，保证不误用 1.20.2+ 新 API。
@@ -50,12 +52,13 @@ mvn clean package -P spigot       # 产物: target/ddoor-1.0.5-spigot.jar（shad
 ## 使用
 
 - **玩家**：合成门之钥（紫晶×4 + 铁锭×4 + 末影之眼×1 → 2 把，配方自动解锁至配方书）→ 放两扇门 → 手持钥匙依次右键 → 传送方式三选一（走近 / 右键 / 左键）
+- **运生物**：合成门之钥·实体（紫晶×4 + 末影珍珠×4 + 恶魂之泪×1 → 1 把）配对，门即玩家与生物通用；钥匙默认 48 小时有效（起算于合成/发放），配好的门永久有效
 - **GUI**：`/ddoor gui` 打开门对管理菜单——
-  - 门对列表：左键传送、右键进详情、Shift+右键解绑；详细/简化两档信息显示
-  - 门对详情：两端坐标/朝向/群系、创建时间、累计穿越、状态开关、重命名、解绑
+  - 门对列表：左键传送、右键进详情、Shift+右键解绑；详细/简化两档信息显示；实体门用深色橡木门图标
+  - 门对详情：两端坐标/朝向/群系、创建时间、累计穿越、实体穿越支持、状态开关、重命名、解绑
   - 交互记录：谁在何时传送/配对/解绑/破坏（仅门主与管理员可见）
   - 个人设置：传送触发方式（走近/右键/左键）、信息显示（详细/简化）
-- **命令**：`/ddoor gui|list|tp|rename|unlink|link|delete|key|stats|reload`
+- **命令**：`/ddoor gui|list|tp|rename|unlink|link|delete|key|stats|reload`（`key` 支持 `[normal|entity]` 类型参数）
 - **权限**：`ddoor.use`（穿越）/ `ddoor.create`（配对）/ `ddoor.gui`（菜单）/ `ddoor.limit.<n>`（门对上限）/ `ddoor.admin`（管理）详见 plugin.yml
 
 ## 核心设计
@@ -64,6 +67,7 @@ mvn clean package -P spigot       # 产物: target/ddoor-1.0.5-spigot.jar（shad
 |------|------|
 | 零门槛创建 | 放门 + 门之钥右键，无需命令/选区/告示牌；配方自动进配方书 |
 | 传送触发可选 | 玩家自选走近 / 右键 / 左键触发，GUI 一键切换，配置定义新玩家默认值 |
+| 实体门 | 门之钥·实体配对的门玩家与生物通用，落点同样安全校验，钥匙限时 48h |
 | 实体配对模型 | 门对（DoorPair）双向对称，一扇门同一时刻只属于一个门对；可整体停用 |
 | 详尽反馈 | 落点被堵时报出具体方块与世界坐标；简化模式一键降噪 |
 | 交互审计 | 传送/配对/解绑/破坏全量入库（SQLite/MySQL），门主 GUI 可查，自动过期清理 |

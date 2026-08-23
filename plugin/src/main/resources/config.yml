@@ -10,6 +10,18 @@ key:
   craftable: true        # 是否启用合成配方
   recipe-output: 2       # 单次合成产出数量
 
+entity-key:              # 门之钥·实体：配对的门玩家与生物均可穿越
+  item: AMETHYST_SHARD
+  custom-model-data: 21002
+  craftable: true        # false 时仅能通过 /ddoor key entity 发放（适合商店售卖）
+  recipe-output: 1
+  expire-hours: 48       # 有效期（小时），从合成/发放时起算，0 = 永久
+
+entity:                  # 实体传送行为
+  enabled: true          # 实体门总开关
+  cooldown-seconds: 5    # 单个生物的传送冷却
+  named-only: false      # true = 只传送有自定义名字的生物
+
 teleport:
   cooldown-seconds: 3    # 玩家级传送冷却
   fade-effect: true      # 传送瞬间屏幕渐暗过渡

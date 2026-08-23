@@ -50,7 +50,8 @@ public class SqliteStore implements DoorStore {
               paired_id CHAR(36),
               created_at BIGINT NOT NULL,
               uses BIGINT NOT NULL DEFAULT 0,
-              enabled INTEGER NOT NULL DEFAULT 1
+              enabled INTEGER NOT NULL DEFAULT 1,
+              entity_support INTEGER NOT NULL DEFAULT 0
             )""";
 
     private static final String SETTINGS_SCHEMA = """
@@ -94,6 +95,7 @@ public class SqliteStore implements DoorStore {
             st.execute("CREATE INDEX IF NOT EXISTS idx_ddoor_logs_time ON ddoor_logs(time)");
         }
         migrateDoorsEnabled();
+        migrateDoorsEntitySupport();
     }
 
     /** v1.0.2 installs lack the enabled column — add it without touching data. */
@@ -105,6 +107,18 @@ public class SqliteStore implements DoorStore {
         }
         try (Statement st = conn.createStatement()) {
             st.execute("ALTER TABLE ddoor_doors ADD COLUMN enabled INTEGER NOT NULL DEFAULT 1");
+        }
+    }
+
+    /** v1.0.5 installs lack the entity_support column — add it without touching data. */
+    private void migrateDoorsEntitySupport() throws SQLException {
+        try (Statement st = conn.createStatement(); ResultSet rs = st.executeQuery("PRAGMA table_info(ddoor_doors)")) {
+            while (rs.next()) {
+                if ("entity_support".equalsIgnoreCase(rs.getString("name"))) return;
+            }
+        }
+        try (Statement st = conn.createStatement()) {
+            st.execute("ALTER TABLE ddoor_doors ADD COLUMN entity_support INTEGER NOT NULL DEFAULT 0");
         }
     }
 
@@ -122,7 +136,7 @@ public class SqliteStore implements DoorStore {
     @Override
     public void upsert(DoorRecord door) throws Exception {
         try (PreparedStatement ps = conn.prepareStatement(
-                "INSERT OR REPLACE INTO ddoor_doors (id,name,owner,world,x,y,z,facing,paired_id,created_at,uses,enabled) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)")) {
+                "INSERT OR REPLACE INTO ddoor_doors (id,name,owner,world,x,y,z,facing,paired_id,created_at,uses,enabled,entity_support) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)")) {
             bind(ps, door);
             ps.executeUpdate();
         }
@@ -213,6 +227,7 @@ public class SqliteStore implements DoorStore {
         ps.setLong(10, d.createdAt());
         ps.setLong(11, d.uses());
         ps.setInt(12, d.enabled() ? 1 : 0);
+        ps.setInt(13, d.entities() ? 1 : 0);
     }
 
     static DoorRecord fromRow(ResultSet rs) throws SQLException {
@@ -222,6 +237,12 @@ public class SqliteStore implements DoorStore {
             enabled = rs.getInt("enabled") != 0;
         } catch (SQLException legacy) {
             // pre-1.0.5 rows before migration completes — enabled defaults to true
+        }
+        boolean entities = false;
+        try {
+            entities = rs.getInt("entity_support") != 0;
+        } catch (SQLException legacy) {
+            // pre-1.0.7 rows before migration completes — entity support defaults to false
         }
         return new DoorRecord(
                 UUID.fromString(rs.getString("id")),
@@ -233,7 +254,8 @@ public class SqliteStore implements DoorStore {
                 paired == null ? null : UUID.fromString(paired),
                 rs.getLong("created_at"),
                 rs.getLong("uses"),
-                enabled);
+                enabled,
+                entities);
     }
 
     static void bindLog(PreparedStatement ps, DoorLog l) throws SQLException {

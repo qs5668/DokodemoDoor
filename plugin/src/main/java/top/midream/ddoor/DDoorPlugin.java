@@ -113,9 +113,9 @@ public final class DDoorPlugin extends JavaPlugin {
             }
         }
 
-        pairs = new PairManager(this, registry, writeQueue, msg, vault);
-        engine = new TeleportEngine(this, registry, pairs, msg, vault, settings, logs);
         keyItem = new KeyItem(this, msg);
+        pairs = new PairManager(this, registry, writeQueue, msg, vault, keyItem);
+        engine = new TeleportEngine(this, registry, pairs, msg, vault, settings, logs);
         menu = new DoorMenu(this);
 
         JoinListener joinListener = new JoinListener(this);
@@ -140,6 +140,7 @@ public final class DDoorPlugin extends JavaPlugin {
 
         new ParticleTask(this, registry, pairs).runTaskTimer(this, 40L, 4L);
         new AuditTask(this, registry, pairs).runTaskTimer(this, 100L, cfg.auditIntervalSeconds * 20L);
+        new top.midream.ddoor.teleport.EntityTeleportTask(this).runTaskTimer(this, 20L, 20L);
         getServer().getScheduler().runTaskTimer(this, pairs::tickCleanup, 20L, 20L);
         getServer().getScheduler().runTaskTimer(this,
                 () -> logs.cleanup(System.currentTimeMillis()), 20L * 60L, 20L * 60L);
