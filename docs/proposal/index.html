@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>《任意门》插件策划案 — DokodemoDoor for Leaves 1.21.8</title>
+<title>《任意门》插件策划案 — DokodemoDoor 配对式跨世界传送门</title>
 <style>
 @font-face {
   font-family: 'Silkscreen';
@@ -160,6 +160,8 @@ ul.plain li, ol.plain li { margin-bottom: 6px; }
 }
 .callout.violet { border-left-color: var(--accent); background: rgba(179,136,255,0.07); }
 .callout b { color: var(--ink); }
+.callout a { color: var(--accent); text-decoration: none; }
+.callout a:hover { text-decoration: underline; }
 
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 18px 0; }
 .grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin: 18px 0; }
@@ -601,22 +603,25 @@ sup a:hover { text-decoration: underline; }
 
 <!-- ================= Hero ================= -->
 <header class="hero">
-  <div class="hero-badge"><span class="dot"></span>PLUGIN PROPOSAL · LEAVES 1.21.8</div>
+  <div class="hero-badge"><span class="dot"></span>PLUGIN PROPOSAL · V1.0.5 SHIPPED · GPL-3.0</div>
   <h1>《任意门》插件策划案
     <span class="en">DOKODEMO DOOR — PAIRED CROSS-WORLD PORTALS</span>
   </h1>
-  <p class="hero-sub">两扇门，一次绑定，双向互通。为 Leaves 1.21.8 打造的<strong>配对式跨世界传送门插件</strong>——像原版下界门一样自然走进去，但连接的是任意两个世界的任意两扇门。</p>
+  <p class="hero-sub">两扇门，一次绑定，双向互通。为 Paper 系服务端打造的<strong>配对式跨世界传送门插件</strong>——像原版下界门一样自然走进去，但连接的是任意两个世界的任意两扇门。</p>
   <div class="hero-meta">
-    <span class="meta-chip">目标核心 <b>Leaves 1.21.8</b>（Paper API 兼容）</span>
+    <span class="meta-chip">适配核心 <b>Paper / Leaves / Purpur / Spigot</b></span>
+    <span class="meta-chip">版本范围 <b>MC 1.20.1 – 1.21.8</b></span>
     <span class="meta-chip">运行环境 <b>Java 21</b></span>
-    <span class="meta-chip">类型 <b> Bukkit/ Paper 插件</b></span>
-    <span class="meta-chip">版本目标 <b>V1.0</b></span>
+    <span class="meta-chip">状态 <b>V1.0.5 已发布 · GPL-3.0 开源</b></span>
     <span class="meta-chip">定位 <b>生存 / RPG 服务器</b></span>
   </div>
   <figure class="hero-figure">
     <img src="assets/hero_2560x1440.jpg" alt="两个发光的任意门跨越主世界与下界，被紫色粒子流连接">
     <figcaption>概念图：主世界与下界各立一扇任意门，紫颂粒子在两门之间穿行——这就是插件的全部体验</figcaption>
   </figure>
+  <div class="callout violet" style="text-align:left">
+    <b>落地进度（2026-08）：</b>本策划案的规划范围已全部落地并有所超出——V1.0 交付配对系统、六环检测链传送引擎、双存储与粒子音效反馈；V1.0.2 追加 GUI 门对管理菜单，扩展至 Paper 1.20.1+ / Spigot 双平台并以 GPL-3.0 开源；V1.0.5 增加传送触发方式三选一、门对详情页、交互记录与详尽报错。当前版本可在 <a href="https://github.com/qs5668/DokodemoDoor/releases" target="_blank" rel="noopener">GitHub Releases</a> 下载。下文各章保留策划时的设计推演，凡与最新版本不一致之处，以 <a href="https://github.com/qs5668/DokodemoDoor/blob/main/CHANGELOG.md" target="_blank" rel="noopener">CHANGELOG</a> 与已发布功能为准。
+  </div>
 </header>
 
 <!-- ================= 第 1 章 项目概述 ================= -->
@@ -640,7 +645,7 @@ sup a:hover { text-decoration: underline; }
     <div class="tile">
       <div class="tile-tag">PRINCIPLE 02</div>
       <div class="tile-title">原生化沉浸</div>
-      <div class="tile-desc">触发方式是"走进门框"而非右键点击；配对成功与传送瞬间都有粒子、音效、短暂视觉过渡的完整反馈，玩家感知不到插件的存在，只感知到"门变魔法了"。</div>
+      <div class="tile-desc">默认触发方式是"走进门框"而非右键点击（玩家可在个人设置中改为右键/左键触发）；配对成功与传送瞬间都有粒子、音效、短暂视觉过渡的完整反馈，玩家感知不到插件的存在，只感知到"门变魔法了"。</div>
     </div>
     <div class="tile">
       <div class="tile-tag">PRINCIPLE 03</div>
@@ -768,8 +773,8 @@ sup a:hover { text-decoration: underline; }
   </figure>
 
   <h3 class="sub">3.3 传送体验</h3>
-  <p>传送的触发方式刻意选择了<strong>物理走进</strong>而非右键交互：玩家推门而入的动线与原版下界门完全一致，肌肉记忆零迁移成本。传送发生时按固定时序播放三段反馈——门口紫颂粒子收拢为漩涡（200ms）→ 屏幕短暂渐暗（可配置，默认 300ms）→ 落点粒子绽放并播放 <span class="inline-code">BLOCK_CHORUS_FLOWER_TELEPORT</span> 音效。整套反馈控制在半秒内完成，节奏快于下界门的原版过场。</p>
-  <p>落点计算遵循<strong>门前安全原则</strong>：传送目的地固定为对侧门"面向外"的一格，插件自动校验该格及其头顶两格无碰撞方块、脚下有承托面；校验失败时向门左右两侧逐格探测，全部失败则拒绝传送并提示对侧异常，玩家不会被传进方块或虚空。</p>
+  <p>传送的触发方式默认选择<strong>物理走进</strong>而非右键交互：玩家推门而入的动线与原版下界门完全一致，肌肉记忆零迁移成本（V1.0.5 起玩家可在 GUI 个人设置中改为右键或左键点击触发，防止路过误传；左键模式下潜行开门、拆门等原版操作不受影响）。传送发生时按固定时序播放三段反馈——门口紫颂粒子收拢为漩涡（200ms）→ 屏幕短暂渐暗（可配置，默认 300ms）→ 落点粒子绽放并播放 <span class="inline-code">BLOCK_CHORUS_FLOWER_TELEPORT</span> 音效。整套反馈控制在半秒内完成，节奏快于下界门的原版过场。</p>
+  <p>落点计算遵循<strong>门前安全原则</strong>：传送目的地固定为对侧门"面向外"的一格，插件自动校验该格及其头顶两格无碰撞方块、脚下有承托面；校验失败时向门左右两侧逐格探测，全部失败则拒绝传送并提示对侧异常，玩家不会被传进方块或虚空。V1.0.5 起拒绝提示默认携带完整诊断——哪个坐标的什么方块挡住了落点或头部、脚下悬空还是对侧门在哪个世界哪个坐标被破坏，玩家可按需在设置中切换为简化文案。</p>
 
   <h3 class="sub">3.4 视觉与听觉设计</h3>
   <div class="table-wrap">
@@ -811,6 +816,7 @@ sup a:hover { text-decoration: underline; }
         <tr><td><span class="code">world / x / y / z</span></td><td>String / int</td><td>锚定方块坐标（下半门格）</td></tr>
         <tr><td><span class="code">facing</span></td><td>Enum</td><td>门朝向，决定传送落点在门外哪一侧</td></tr>
         <tr><td><span class="code">paired_id</span></td><td>UUID</td><td>配对门 ID，未配对为空</td></tr>
+        <tr><td><span class="code">enabled</span></td><td>boolean</td><td>门对启用开关，停用后暂停传送但不删数据（V1.0.5）</td></tr>
         <tr><td><span class="code">created_at / uses</span></td><td>long</td><td>创建时间戳 / 累计穿越次数（供统计与 PAPI）</td></tr>
       </tbody>
     </table>
@@ -928,7 +934,7 @@ flowchart TD
   <p><strong>Vault 经济挂钩（软依赖）：</strong>可选拆分为两档收费——创建费（配对成功时扣）与使用费（每次穿越扣，默认关闭）。未安装 Vault 时相关配置自动失效，插件功能不受影响。</p>
 
   <h3 class="sub">4.4 管理 GUI 与命令</h3>
-  <p>服主入口为 <span class="inline-code">/ddoor</span> 命令树与一个箱子风格 GUI。GUI 主体是门对列表（每对门一个门图标），点击选中后在右侧详情栏执行操作——以下是可交互原型，点击门图标试试：</p>
+  <p>服主入口为 <span class="inline-code">/ddoor</span> 命令树与一个箱子风格 GUI。GUI（V1.0.2 引入、V1.0.5 扩为四页）由<strong>门对列表</strong>（左键传送、右键进详情、Shift+右键解绑，详细/简化两档信息显示）、<strong>门对详情</strong>（两端世界/坐标/朝向/群系、创建时间、各自穿越次数，支持启停/重命名/解绑/传送）、<strong>交互记录</strong>（谁在何时传送/配对/解绑/破坏，仅门主与管理员可见，分页）、<strong>个人设置</strong>（传送触发方式、信息显示档位）组成。以下为列表页原型，点击门图标试试：</p>
 
   <div class="demo">
     <div class="demo-head">
@@ -1030,7 +1036,7 @@ flowchart TB
   </figure>
 
   <h3 class="sub">5.2 存储设计</h3>
-  <p>默认 SQLite（WAL 模式，零配置开箱即用），可切换 MySQL 适配群组服。单表 <span class="inline-code">ddoor_doors</span>，门对通过 <span class="inline-code">paired_id</span> 互相引用。启动时全量加载进内存索引后，运行期<strong>只读内存、只写队列</strong>——所有变更先进异步写队列批量落库，关服时统一刷盘，玩家传送路径上没有任何同步 IO。</p>
+  <p>默认 SQLite（WAL 模式，零配置开箱即用），可切换 MySQL 适配群组服。核心表 <span class="inline-code">ddoor_doors</span>（门对通过 <span class="inline-code">paired_id</span> 互相引用），V1.0.5 追加 <span class="inline-code">ddoor_player_settings</span>（玩家偏好：触发方式/信息档位）与 <span class="inline-code">ddoor_logs</span>（交互记录）两张表；从旧版本升级时 schema 自动迁移，无需手工改库。启动时全量加载进内存索引后，运行期<strong>只读内存、只写队列</strong>——所有变更先进异步写队列批量落库，关服时统一刷盘，玩家传送路径上没有任何同步 IO。</p>
   <p>内存索引是性能关键：以世界名 + 方块坐标打包的 <span class="inline-code">long</span> 作 key 的哈希表（<span class="inline-code">Long2ObjectOpenHashMap</span> 或等价结构），任意"这个坐标是不是任意门"的查询都是 O(1)。50 对门与 5000 对门的查询成本完全相同，数据量不构成性能变量。</p>
 
   <h3 class="sub">5.3 性能设计：驯服 PlayerMoveEvent</h3>
@@ -1043,7 +1049,7 @@ flowchart TB
 
   <h3 class="sub">5.4 兼容性边界</h3>
   <ul class="plain">
-    <li><strong>核心依赖：</strong>Paper API 1.21.8，Java 21。Leaves 是 Paper 的高性能分支，完全兼容 Paper 插件生态<sup><a href="#cite-1">[1]</a></sup>，本插件不做任何 NMS / 内部 API 调用，在 Paper / Purpur / Pufferfish 系核心上同样可运行</li>
+    <li><strong>核心依赖：</strong>Bukkit / Paper 公开 API，Java 21，零 NMS 依赖。落地为 <span class="inline-code">TextAdapter</span> 平台抽象层 + Maven 多 profile 构建，同一套业务代码发行三套包：Paper 1.21.x、Paper 1.20.1–1.20.6（<span class="inline-code">api-version: 1.20</span>）、Spigot 1.21+（shade 并重定位 Adventure），覆盖 Paper / Leaves / Purpur / Spigot 全系核心<sup><a href="#cite-1">[1]</a></sup></li>
     <li><strong>与原版下界门共存：</strong>任意门使用"门方块"（Door 方块）而非"传送门方块"（Portal 方块），与下界门、末地门零冲突</li>
     <li><strong>多世界插件：</strong>不依赖 Multiverse 系，通过 Bukkit World API 读取世界列表，任意来源创建的世界（MV / MyWorlds / 原版多世界）均可作为门的世界</li>
     <li><strong>Folia：</strong>V1.0 不承诺支持（需全面 RegionScheduler 改造），架构上已将"传送到未加载区块"设计为异步路径，为后续适配留出接口</li>
@@ -1081,7 +1087,7 @@ flowchart TB
         <tr><td><span class="code">/ddoor unlink &lt;门名&gt;</span></td><td>解除一扇门的配对</td><td><span class="code">ddoor.unlink</span></td><td>门所有者</td></tr>
         <tr><td><span class="code">/ddoor delete &lt;门名&gt;</span></td><td>删除门的记录（不可恢复）</td><td><span class="code">ddoor.delete</span></td><td>OP</td></tr>
         <tr><td><span class="code">/ddoor key [数量] [玩家]</span></td><td>发放门之钥</td><td><span class="code">ddoor.admin</span></td><td>OP</td></tr>
-        <tr><td><span class="code">/ddoor stats</span></td><td>全服门对统计（总量 / 今日穿越 / TOP 门对）</td><td><span class="code">ddoor.admin</span></td><td>OP</td></tr>
+        <tr><td><span class="code">/ddoor stats</span></td><td>个人统计（门对数/上限/累计穿越/传送方式/信息档位）；持 <span class="code">ddoor.admin</span> 者追加全服统计</td><td>个人部分无权限要求</td><td>全体</td></tr>
         <tr><td><span class="code">/ddoor reload</span></td><td>重载配置（不动数据）</td><td><span class="code">ddoor.admin</span></td><td>OP</td></tr>
       </tbody>
     </table>
@@ -1124,6 +1130,7 @@ flowchart TB
 
 <span class="k">teleport:</span>
   <span class="k">cooldown-seconds:</span> <span class="v">3</span>          <span class="cm"># 玩家级传送冷却</span>
+  <span class="k">default-mode:</span> <span class="v">walk</span>             <span class="cm"># 新玩家默认触发方式 walk / right_click / left_click</span>
   <span class="k">fade-effect:</span> <span class="v">true</span>             <span class="cm"># 传送瞬间屏幕渐暗过渡</span>
   <span class="k">anti-fall-ticks:</span> <span class="v">40</span>          <span class="cm"># 落点抗性时长（防加载延迟摔伤）</span>
   <span class="k">deny-vehicles:</span> <span class="v">true</span>           <span class="cm"># 骑乘状态禁止传送</span>
@@ -1132,6 +1139,9 @@ flowchart TB
   <span class="k">session-timeout-seconds:</span> <span class="v">60</span> <span class="cm"># 待配对会话 TTL</span>
   <span class="k">default-limit:</span> <span class="v">3</span>            <span class="cm"># 无 ddoor.limit.&lt;n&gt; 时的门对上限</span>
   <span class="k">unlink-cooldown-seconds:</span> <span class="v">10</span> <span class="cm"># 同一门解绑后的再绑定冷却</span>
+
+<span class="k">logs:</span>
+  <span class="k">retention-days:</span> <span class="v">30</span>           <span class="cm"># 交互记录保留天数，0 = 永久</span>
 
 <span class="k">visual:</span>
   <span class="k">idle-particle:</span> <span class="v">true</span>           <span class="cm"># 待机粒子开关</span>
@@ -1167,7 +1177,7 @@ flowchart TB
     <div class="rule"></div>
   </div>
 
-  <p>单人业余时间开发，按四周四个里程碑推进，每个里程碑结束都产出可跑的版本——M1 结束时核心玩法已可自用测试，不必等全部完成。</p>
+  <p>单人业余时间开发，按四周四个里程碑推进，每个里程碑结束都产出可跑的版本——M1 结束时核心玩法已可自用测试，不必等全部完成。以下里程碑已于 2026-08 全部达成：</p>
 
   <div class="milestones">
     <div class="milestone">
@@ -1203,6 +1213,10 @@ flowchart TB
       </div>
     </div>
   </div>
+
+  <div class="callout">
+    <b>发布实录：</b>V1.0（2026-08-23）按计划交付全部 M0–M3 范围并开源（GPL-3.0）；V1.0.2 追加 GUI 门对管理菜单、Paper 1.20.1–1.20.6 与 Spigot 双平台构建；V1.0.5 增加传送触发方式三选一、门对详情页、交互记录、详尽报错与门之钥配方自动解锁。三个平台包（paper / paper-1.20 / spigot）均可在 <a href="https://github.com/qs5668/DokodemoDoor/releases" target="_blank" rel="noopener">GitHub Releases</a> 下载，更新明细见 <a href="https://github.com/qs5668/DokodemoDoor/blob/main/CHANGELOG.md" target="_blank" rel="noopener">CHANGELOG</a>。
+  </div>
 </section>
 
 <!-- ================= 第 9 章 风险与应对 ================= -->
@@ -1228,7 +1242,7 @@ flowchart TB
   </div>
 
   <div class="callout violet">
-    <b>发布策略建议：</b>V1.0 先在自有服务器（米优服）实跑两周收集真实使用数据，重点观察门对创建速率与穿越频次分布，再决定 V1.1 的方向排序——若跨服需求呼声最高，则优先 Velocity 支持；若沉浸感反馈集中，则优先门内景渲染（让任意门内也能看见对面的伪透视效果）。
+    <b>发布策略：</b>V1.0 起已在自有服务器（米优服）实跑，并同步在 GitHub 开源发布，正持续收集门对创建速率与穿越频次的真实数据。V1.1 的方向排序将据此决定——若跨服需求呼声最高，则优先 Velocity 支持；若沉浸感反馈集中，则优先门内景渲染（让任意门内也能看见对面的伪透视效果）。
   </div>
 </section>
 
@@ -1247,7 +1261,7 @@ flowchart TB
         <li id="cite-5"><span class="src-title">AstroWorld MC 指南 — Multiverse vs MyWorlds 对比：两类传送门插件的创建模型差异。</span><a class="src-url" href="https://guide.astroworldmc.com/multiverse-vs-myworlds" target="_blank" rel="noopener">https://guide.astroworldmc.com/multiverse-vs-myworlds</a></li>
       </ol>
     </div>
-    <div class="colophon">《任意门》插件策划案 · DokodemoDoor for Leaves 1.21.8 · 2026-08 · <a href="https://www.midream.top" target="_blank" rel="noopener">米优服官网</a></div>
+    <div class="colophon">《任意门》插件策划案 · DokodemoDoor for Paper / Leaves / Spigot 1.20.1 – 1.21.8 · 2026-08 · V1.0.5 已发布 · <a href="https://www.midream.top" target="_blank" rel="noopener">米优服官网</a></div>
   </div>
 </footer>
 
