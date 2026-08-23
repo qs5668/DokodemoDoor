@@ -138,6 +138,29 @@ footer {
 footer a { color: var(--accent); text-decoration: none; }
 footer a:hover { text-decoration: underline; }
 
+.site-return {
+  position: fixed; top: 18px; right: 18px; z-index: 50;
+  font-size: 12.5px; color: var(--accent2); text-decoration: none;
+  border: 1px solid rgba(52,211,153,0.35); border-radius: 999px;
+  padding: 4px 14px; background: rgba(10,14,26,0.85);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  transition: background .2s, border-color .2s;
+}
+.site-return:hover { background: rgba(52,211,153,0.1); border-color: rgba(52,211,153,0.6); }
+
+.foot-links { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 16px; }
+.foot-links a {
+  font-size: 13px; color: var(--accent); text-decoration: none;
+  border: 1px solid rgba(179,136,255,0.3); border-radius: 999px; padding: 5px 16px;
+}
+.foot-links a:hover { background: rgba(179,136,255,0.08); }
+.foot-legal { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+.foot-legal a { color: var(--accent2); }
+.foot-note {
+  font-size: 11.5px; color: var(--muted); opacity: 0.85;
+  max-width: 560px; margin: 0 auto; line-height: 1.7;
+}
+
 @media (max-width: 760px) {
   h1 { font-size: 40px; }
   .cards { flex-direction: column; align-items: center; }
@@ -146,6 +169,8 @@ footer a:hover { text-decoration: underline; }
 </style>
 </head>
 <body>
+
+<a class="site-return" href="https://www.midream.top" target="_blank" rel="noopener">米优服主页 ↗</a>
 
 <div class="hero-badge"><span class="dot"></span>MINECRAFT PLUGIN · V1.0.5 RELEASED · GPL-3.0</div>
 <h1>任意门</h1>
@@ -177,7 +202,15 @@ footer a:hover { text-decoration: underline; }
   <span class="chip">状态 <b>V1.0.5 已发布 · GPL-3.0 开源</b></span>
 </div>
 
-<footer>任意门 DokodemoDoor · <a href="https://www.midream.top" target="_blank" rel="noopener">米优服官网</a> · <a href="https://github.com/qs5668/DokodemoDoor" target="_blank" rel="noopener">GitHub 仓库</a> · <a href="https://github.com/qs5668/DokodemoDoor/releases" target="_blank" rel="noopener">下载 Releases</a></footer>
+<footer>
+  <div class="foot-links">
+    <a href="https://www.midream.top" target="_blank" rel="noopener">米优服官网</a>
+    <a href="https://github.com/qs5668/DokodemoDoor" target="_blank" rel="noopener">GitHub 仓库</a>
+    <a href="https://github.com/qs5668/DokodemoDoor/releases" target="_blank" rel="noopener">下载 Releases</a>
+  </div>
+  <div class="foot-legal">&copy; Midream 2024–2026 · 本插件以 <a href="https://www.gnu.org/licenses/gpl-3.0.html" target="_blank" rel="noopener">GPL-3.0</a> 协议开源</div>
+  <p class="foot-note">本插件由 AI 辅助设计与开发；页面配图为 AI 生成，仅作功能示意，与游戏内实际效果存在差异。GPL-3.0 允许自由使用、修改与二次开发，再分发时须以相同协议开源并提供完整源码。</p>
+</footer>
 
 </body>
 </html>

@@ -543,6 +543,11 @@ footer {
   color: var(--muted);
 }
 .foot-brand b { color: var(--accent); }
+.foot-legal {
+  font-size: 11.5px; color: var(--muted); opacity: 0.85; margin-top: 10px;
+}
+.foot-legal a { color: var(--accent2); text-decoration: none; }
+.foot-legal a:hover { text-decoration: underline; }
 
 /* ============ 响应式 ============ */
 @media (max-width: 760px) {
@@ -564,8 +569,9 @@ footer {
 <!-- ============ 导航 ============ -->
 <nav class="nav">
   <div class="nav-inner">
-    <a class="nav-logo" href="#top">任意门 <b>DDoor</b></a>
+    <a class="nav-logo" href="../">任意门 <b>DDoor</b></a>
     <div class="nav-links">
+      <a href="../">首页</a>
       <a href="#intro">是什么</a>
       <a href="#steps">三步上手</a>
       <a href="#key">门之钥</a>
@@ -918,7 +924,9 @@ footer {
       <a href="https://docs.midream.top" target="_blank" rel="noopener">玩法文档站</a>
     </div>
     <p class="foot-note">具体参数（门对上限、冷却时间等）以服务器内公告与文档站为准，服务器可能会按运营情况调整。</p>
+    <p class="foot-note">本插件由 AI 辅助设计与开发；页面配图为 AI 生成，仅作功能示意，与游戏内实际效果存在差异。</p>
     <div class="foot-brand">任意门 <b>DOKODEMO DOOR</b> · 米优服 MINECRAFT</div>
+    <div class="foot-legal">&copy; Midream 2024–2026 · 本插件以 <a href="https://www.gnu.org/licenses/gpl-3.0.html" target="_blank" rel="noopener">GPL-3.0</a> 协议开源：允许自由使用、修改与二次开发，再分发时须以相同协议开源并提供完整源码</div>
   </div>
 </footer>
 
