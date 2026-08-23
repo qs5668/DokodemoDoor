@@ -23,20 +23,26 @@ import java.util.UUID;
 
 public class DoorRecord {
 
+    private static final long[] NO_EXTRA = new long[0];
+
     private final UUID id;
-    private String name;
+    // mutable fields are written on the main thread and read by the DDoor-Writer
+    // thread during async persistence — volatile guarantees visibility
+    private volatile String name;
     private final UUID owner;
     private final String world;
     private final int x;
     private final int y;
     private final int z;
     private final BlockFace facing;
-    private UUID pairedId;
+    private volatile UUID pairedId;
     private final long createdAt;
-    private long uses;
-    private boolean enabled = true;
-    private boolean entities = false;
-    private long expiresAt = 0; // pair lifetime deadline (entity tiers), 0 = never
+    private volatile long uses;
+    private volatile boolean enabled = true;
+    private volatile boolean entities = false;
+    private volatile long expiresAt = 0; // pair lifetime deadline (entity tiers), 0 = never
+    // twin-block keys registered in the block index (main thread only, not persisted)
+    private long[] extraBlocks = NO_EXTRA;
 
     public DoorRecord(UUID id, String name, UUID owner, String world, int x, int y, int z,
                       BlockFace facing, UUID pairedId, long createdAt, long uses) {
@@ -94,6 +100,10 @@ public class DoorRecord {
     public void entities(boolean entities) { this.entities = entities; }
     public long expiresAt() { return expiresAt; }
     public void expiresAt(long expiresAt) { this.expiresAt = expiresAt; }
+
+    /** Keys of twin blocks currently mapped to this door in the block index. */
+    public long[] extraBlocks() { return extraBlocks; }
+    public void extraBlocks(long[] keys) { this.extraBlocks = keys == null ? NO_EXTRA : keys; }
 
     public boolean isPaired() { return pairedId != null; }
 

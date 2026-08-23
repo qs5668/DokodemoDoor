@@ -33,7 +33,6 @@ import top.midream.ddoor.door.DoorRecord;
 import top.midream.ddoor.log.DoorLog;
 import top.midream.ddoor.visual.Fx;
 
-import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -48,6 +47,7 @@ public class EntityTeleportTask extends BukkitRunnable {
 
     private final DDoorPlugin plugin;
     private final Map<UUID, Long> cooldowns = new ConcurrentHashMap<>();
+    private long lastSweep = 0L;
 
     public EntityTeleportTask(DDoorPlugin plugin) {
         this.plugin = plugin;
@@ -66,6 +66,10 @@ public class EntityTeleportTask extends BukkitRunnable {
             World world = Bukkit.getWorld(door.world());
             if (world == null) continue;
             if (!world.isChunkLoaded(door.x() >> 4, door.z() >> 4)) continue;
+            World dstWorld = Bukkit.getWorld(dst.world());
+            // Entity#teleport is synchronous — a cold destination chunk would
+            // load on the main thread. Skip and retry next sweep instead.
+            if (dstWorld == null || !dstWorld.isChunkLoaded(dst.x() >> 4, dst.z() >> 4)) continue;
 
             Block anchor = world.getBlockAt(door.x(), door.y(), door.z());
             Block front = anchor.getRelative(door.facing());
@@ -95,13 +99,16 @@ public class EntityTeleportTask extends BukkitRunnable {
             }
         }
 
-        // keep the cooldown map bounded
-        if (!cooldowns.isEmpty()) {
-            Iterator<Long> it = cooldowns.values().iterator();
-            while (it.hasNext()) {
-                if (now - it.next() > 600_000L) it.remove();
-            }
+        // keep the cooldown map bounded; sweep once a minute is plenty
+        if (sweepDue(now)) {
+            cooldowns.values().removeIf(last -> now - last > 600_000L);
         }
+    }
+
+    private boolean sweepDue(long now) {
+        if (cooldowns.isEmpty() || now - lastSweep < 60_000L) return false;
+        lastSweep = now;
+        return true;
     }
 
     private static String nameOf(Entity e) {

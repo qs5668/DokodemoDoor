@@ -142,15 +142,23 @@ public class TeleportEngine {
             return;
         }
         // gate 5: landing safety (with side probing)
-        Block dstAnchor = world.getBlockAt(dst.x(), dst.y(), dst.z());
-        Location landing = safeLanding(dstAnchor, dst.facing());
-        if (landing == null) {
-            if (simple(player)) {
-                msg.send(player, "tp.unsafe");
-            } else {
-                msg.send(player, "tp.unsafe-detail", "detail", unsafeDetail(dstAnchor, dst.facing()));
+        Location landing;
+        if (world.isChunkLoaded(dst.x() >> 4, dst.z() >> 4)) {
+            Block dstAnchor = world.getBlockAt(dst.x(), dst.y(), dst.z());
+            landing = safeLanding(dstAnchor, dst.facing());
+            if (landing == null) {
+                if (simple(player)) {
+                    msg.send(player, "tp.unsafe");
+                } else {
+                    msg.send(player, "tp.unsafe-detail", "detail", unsafeDetail(dstAnchor, dst.facing()));
+                }
+                return;
             }
-            return;
+        } else {
+            // cold destination chunk: probing it here would load it synchronously
+            // on the main thread. Land in front of the door and let the async
+            // teleport resolve the chunk instead.
+            landing = frontOf(dst, world);
         }
         // economy charge
         if (cfg().economyEnabled && vault.isEnabled() && cfg().useCost > 0) {
@@ -230,6 +238,18 @@ public class TeleportEngine {
         return safeLanding(world.getBlockAt(door.x(), door.y(), door.z()), door.facing());
     }
 
+    /** Front-of-door landing computed from coordinates only — no block access, no chunk load. */
+    private static Location frontOf(DoorRecord door, World world) {
+        BlockFace f = door.facing();
+        return new Location(world, door.x() + f.getModX() + 0.5, door.y(), door.z() + f.getModZ() + 0.5);
+    }
+
+    /** Periodic sweep of the teleport-cooldown map (called once per second). */
+    public void tickCleanup() {
+        long cutoff = System.currentTimeMillis() - 3_600_000L;
+        lastTeleport.values().removeIf(last -> last < cutoff);
+    }
+
     private boolean isSafe(Block feet) {
         if (!feet.isPassable()) return false;
         Block head = feet.getRelative(BlockFace.UP);
@@ -297,15 +317,21 @@ public class TeleportEngine {
             return;
         }
         BlockFace facing = door.facing();
-        Block anchor = world.getBlockAt(door.x(), door.y(), door.z());
-        Location dest = safeLanding(anchor, facing);
-        if (dest == null) {
-            if (simple(player)) {
-                msg.send(player, "tp.unsafe");
-            } else {
-                msg.send(player, "tp.unsafe-detail", "detail", unsafeDetail(anchor, facing));
+        Location dest;
+        if (world.isChunkLoaded(door.x() >> 4, door.z() >> 4)) {
+            Block anchor = world.getBlockAt(door.x(), door.y(), door.z());
+            dest = safeLanding(anchor, facing);
+            if (dest == null) {
+                if (simple(player)) {
+                    msg.send(player, "tp.unsafe");
+                } else {
+                    msg.send(player, "tp.unsafe-detail", "detail", unsafeDetail(anchor, facing));
+                }
+                return;
             }
-            return;
+        } else {
+            // cold destination chunk — avoid a synchronous load on the main thread
+            dest = frontOf(door, world);
         }
         dest.setYaw(yawOf(facing));
         dest.setPitch(0f);

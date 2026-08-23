@@ -18,6 +18,7 @@
 package top.midream.ddoor.door;
 
 import org.bukkit.Material;
+import org.bukkit.Tag;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.type.Door;
@@ -33,8 +34,12 @@ public final class DoorBlocks {
 
     private DoorBlocks() {}
 
+    /**
+     * Material-tag check instead of getBlockData(): zero allocation on this
+     * hot path (getBlockData clones CraftBlockData on every call).
+     */
     public static boolean isDoor(Block block) {
-        return block != null && block.getBlockData() instanceof Door;
+        return block != null && Tag.DOORS.isTagged(block.getType());
     }
 
     /** Is this block a door block whose lower half sits on top of another door block? (floating upper remnant) */

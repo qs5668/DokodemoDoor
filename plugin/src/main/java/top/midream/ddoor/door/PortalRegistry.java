@@ -41,12 +41,18 @@ public class PortalRegistry {
         for (long key : extraBlocks) {
             blockIndex(door.world()).put(key, door.id());
         }
+        door.extraBlocks(extraBlocks.clone());
     }
 
+    /** O(k) removal using the block keys recorded at register time. */
     public void unregister(DoorRecord door) {
         byId.remove(door.id());
         Map<Long, UUID> idx = blockIndex(door.world());
-        idx.entrySet().removeIf(e -> e.getValue().equals(door.id()));
+        idx.remove(BlockKey.pack(door.x(), door.y(), door.z()));
+        for (long key : door.extraBlocks()) {
+            idx.remove(key);
+        }
+        door.extraBlocks(null);
     }
 
     public DoorRecord byId(UUID id) {

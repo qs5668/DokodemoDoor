@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.0.10] — 2026-08-24
+
+### 稳定性（看门狗事故修复）
+
+- **审计任务全面重构**（v1.0.9 生产事故根因修复）：此前 `AuditTask` 在主线程一次性同步扫描全部门记录，无时间预算——宿主机出现 GC 停顿 / 内存换页 / CPU 争抢时，该循环被同步拉长，直接把服务器拖过看门狗 60 秒阈值导致强制关服。现改为**快照队列 + 20ms 单轮预算 + 最多 256 扇分批 + 断点续扫**：环境劣化时循环提前刹车，下一轮再继续；单圈累计耗时超 500ms 输出告警日志。
+- **门索引重写消除 O(D²)**：每轮审计不再对未变化的门做 unregister→register 全量重注册；`PortalRegistry.unregister` 从全索引扫描改为按记录的方块 key 直删。双子门索引仅在布局实际变化时刷新。
+- **门判定零克隆**：`DoorBlocks.isDoor` 从 `getBlockData()`（每次克隆 BlockData 对象）改为 `Tag.DOORS` 材料标签判定，高频路径零分配。
+- **消除主线程同步区块加载**：玩家走门与实体传送前，若目的地区块未加载，不再在主线程同步加载探测落点——玩家路径改用门前坐标交由 Paper 异步传送（`teleportAsync`）解析区块；实体路径直接跳过本轮、下轮重试。
+- **数据竞争修复**：`DoorRecord` 可变字段（pairedId / uses / enabled / entities / expiresAt / name）全部 `volatile` 化——主线程修改、DDoor-Writer 线程异步持久化读取同一对象时不再有可见性问题。
+- **内存治理**：传送冷却表每小时清理过期项；实体冷却表从每秒全量迭代改为每分钟一次。
+
+### 涉及文件
+
+`AuditTask` `PortalRegistry` `DoorBlocks` `DoorRecord` `EntityTeleportTask` `TeleportEngine` `DDoorPlugin`
+
+### 兼容
+
+- 无配置变更、无数据库变更，直接替换 jar 即可。
+- 门数据与旧版完全互通。
+
 ## [1.0.9] — 2026-08-23
 
 ### 变更

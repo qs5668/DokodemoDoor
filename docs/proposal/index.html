@@ -609,7 +609,7 @@ sup a:hover { text-decoration: underline; }
 
 <!-- ================= Hero ================= -->
 <header class="hero">
-  <div class="hero-badge"><span class="dot"></span>PLUGIN PROPOSAL · V1.0.9 SHIPPED · GPL-3.0</div>
+  <div class="hero-badge"><span class="dot"></span>PLUGIN PROPOSAL · V1.0.10 SHIPPED · GPL-3.0</div>
   <h1>《任意门》插件策划案
     <span class="en">DOKODEMO DOOR — PAIRED CROSS-WORLD PORTALS</span>
   </h1>
@@ -618,7 +618,7 @@ sup a:hover { text-decoration: underline; }
     <span class="meta-chip">适配核心 <b>Paper / Leaves / Purpur / Spigot</b></span>
     <span class="meta-chip">版本范围 <b>MC 1.20.1 – 1.21.8</b></span>
     <span class="meta-chip">运行环境 <b>Java 21</b></span>
-    <span class="meta-chip">状态 <b>V1.0.9 已发布 · GPL-3.0 开源</b></span>
+    <span class="meta-chip">状态 <b>V1.0.10 已发布 · GPL-3.0 开源</b></span>
     <span class="meta-chip">定位 <b>生存 / RPG 服务器</b></span>
   </div>
   <figure class="hero-figure">
@@ -626,7 +626,7 @@ sup a:hover { text-decoration: underline; }
     <figcaption>概念图：主世界与下界各立一扇任意门，紫颂粒子在两门之间穿行——这就是插件的全部体验</figcaption>
   </figure>
   <div class="callout violet" style="text-align:left">
-    <b>落地进度（2026-08）：</b>本策划案的规划范围已全部落地并有所超出——V1.0 交付配对系统、六环检测链传送引擎、双存储与粒子音效反馈；V1.0.2 追加 GUI 门对管理菜单，扩展至 Paper 1.20.1+ / Spigot 双平台并以 GPL-3.0 开源；V1.0.5 增加传送触发方式三选一、门对详情页、交互记录与详尽报错；V1.0.7 新增「门之钥·实体」与实体传送引擎，配对的门玩家与生物均可穿越；V1.0.9 将有效期模型重构为<b>门对限时</b>——钥匙永不过期，七档时限（3/8/12/20/35/42/48h）配对起算，到期自动解绑，管理员可发放任意时长。当前版本可在 <a href="https://github.com/qs5668/DokodemoDoor/releases" target="_blank" rel="noopener">GitHub Releases</a> 下载。下文各章保留策划时的设计推演，凡与最新版本不一致之处，以 <a href="https://github.com/qs5668/DokodemoDoor/blob/main/CHANGELOG.md" target="_blank" rel="noopener">CHANGELOG</a> 与已发布功能为准。
+    <b>落地进度（2026-08）：</b>本策划案的规划范围已全部落地并有所超出——V1.0 交付配对系统、六环检测链传送引擎、双存储与粒子音效反馈；V1.0.2 追加 GUI 门对管理菜单，扩展至 Paper 1.20.1+ / Spigot 双平台并以 GPL-3.0 开源；V1.0.5 增加传送触发方式三选一、门对详情页、交互记录与详尽报错；V1.0.7 新增「门之钥·实体」与实体传送引擎，配对的门玩家与生物均可穿越；V1.0.9 将有效期模型重构为<b>门对限时</b>——钥匙永不过期，七档时限（3/8/12/20/35/42/48h）配对起算，到期自动解绑，管理员可发放任意时长；V1.0.10 完成稳定性改造——审计任务分时预算化、门索引 O(k) 重写、消除主线程同步区块加载与跨线程可见性修复。当前版本可在 <a href="https://github.com/qs5668/DokodemoDoor/releases" target="_blank" rel="noopener">GitHub Releases</a> 下载。下文各章保留策划时的设计推演，凡与最新版本不一致之处，以 <a href="https://github.com/qs5668/DokodemoDoor/blob/main/CHANGELOG.md" target="_blank" rel="noopener">CHANGELOG</a> 与已发布功能为准。
   </div>
 </header>
 
@@ -1264,7 +1264,7 @@ flowchart TB
   </div>
 
   <div class="callout">
-    <b>发布实录：</b>V1.0（2026-08-23）按计划交付全部 M0–M3 范围并开源（GPL-3.0）；V1.0.2 追加 GUI 门对管理菜单、Paper 1.20.1–1.20.6 与 Spigot 双平台构建；V1.0.5 增加传送触发方式三选一、门对详情页、交互记录、详尽报错与门之钥配方自动解锁；V1.0.7 新增门之钥·实体与实体传送引擎，修复 ddoor.create 权限校验缺失与骑乘拦截未生效两处缺陷，数据库自动迁移新增 entity_support 列；V1.0.9 将有效期模型重构为门对限时——钥匙永不过期，七档时限（3/8/12/20/35/42/48h，两把同档合一把高一档）配对起算、到期自动解绑，管理员可经 /ddoor key entity &lt;小时&gt; 发放任意时长，GUI 显示剩余时限，数据库自动迁移新增 expires_at 列。三个平台包（paper / paper-1.20 / spigot）均可在 <a href="https://github.com/qs5668/DokodemoDoor/releases" target="_blank" rel="noopener">GitHub Releases</a> 下载，更新明细见 <a href="https://github.com/qs5668/DokodemoDoor/blob/main/CHANGELOG.md" target="_blank" rel="noopener">CHANGELOG</a>。
+    <b>发布实录：</b>V1.0（2026-08-23）按计划交付全部 M0–M3 范围并开源（GPL-3.0）；V1.0.2 追加 GUI 门对管理菜单、Paper 1.20.1–1.20.6 与 Spigot 双平台构建；V1.0.5 增加传送触发方式三选一、门对详情页、交互记录、详尽报错与门之钥配方自动解锁；V1.0.7 新增门之钥·实体与实体传送引擎，修复 ddoor.create 权限校验缺失与骑乘拦截未生效两处缺陷，数据库自动迁移新增 entity_support 列；V1.0.9 将有效期模型重构为门对限时——钥匙永不过期，七档时限（3/8/12/20/35/42/48h，两把同档合一把高一档）配对起算、到期自动解绑，管理员可经 /ddoor key entity &lt;小时&gt; 发放任意时长，GUI 显示剩余时限，数据库自动迁移新增 expires_at 列；V1.0.10（2026-08-24）针对生产环境看门狗强制关服事故完成稳定性改造——审计任务改为快照队列 + 20ms 单轮预算 + 分批断点续扫，门索引注销从全索引扫描改为按 key 直删，门判定改用材料标签零克隆，玩家/实体传送不再在主线程同步加载冷区块，DoorRecord 跨线程字段可见性修复。三个平台包（paper / paper-1.20 / spigot）均可在 <a href="https://github.com/qs5668/DokodemoDoor/releases" target="_blank" rel="noopener">GitHub Releases</a> 下载，更新明细见 <a href="https://github.com/qs5668/DokodemoDoor/blob/main/CHANGELOG.md" target="_blank" rel="noopener">CHANGELOG</a>。
   </div>
 </section>
 

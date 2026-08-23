@@ -13,6 +13,7 @@
 - [x] V1.0.5（传送方式三选一 / 门对详情 / 交互记录 / 详尽报错）
 - [x] V1.0.7（门之钥·实体：玩家与生物通用传送门）
 - [x] V1.0.9（门对限时体系：七档时限钥匙 / 到期自动解绑 / 腐竹自由发放）
+- [x] V1.0.10（稳定性：审计任务分时预算化 / 索引重写 / 消除主线程同步区块加载）
 
 ## 下载
 
@@ -37,9 +38,9 @@
 
 ```bash
 cd plugin
-mvn clean package -P paper        # 产物: target/ddoor-1.0.9-paper.jar（MC 1.21.x）
-mvn clean package -P paper-120    # 产物: target/ddoor-1.0.9-paper-1.20.jar（MC 1.20.1–1.20.6）
-mvn clean package -P spigot       # 产物: target/ddoor-1.0.9-spigot.jar（shade Adventure）
+mvn clean package -P paper        # 产物: target/ddoor-1.0.10-paper.jar（MC 1.21.x）
+mvn clean package -P paper-120    # 产物: target/ddoor-1.0.10-paper-1.20.jar（MC 1.20.1–1.20.6）
+mvn clean package -P spigot       # 产物: target/ddoor-1.0.10-spigot.jar（shade Adventure）
 ```
 
 要求 JDK 21+。默认 profile 为 paper。依赖（paper-api / spigot-api、VaultAPI、PlaceholderAPI）均为 provided 作用域，运行时由服务器或对应插件提供；Spigot 包将 Adventure 序列化器 shade 并重定位到 `top.midream.ddoor.libs.kyori`。1.20 包以 paper-api 1.20.1 为最低基线编译，保证不误用 1.20.2+ 新 API。
