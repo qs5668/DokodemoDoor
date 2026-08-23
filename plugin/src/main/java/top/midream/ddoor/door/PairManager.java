@@ -143,6 +143,7 @@ public class PairManager {
         }
         Fx.pairSuccess(locOf(first), locOf(secondRec), cfg().soundOnTeleport);
         msg.send(player, "link.second-selected", "name", pairName);
+        plugin.logs().log(first, player.getName(), top.midream.ddoor.log.DoorLog.ACTION_LINK);
     }
 
     private DoorRecord ensureRecord(Player owner, Block anchor) {
@@ -180,6 +181,9 @@ public class PairManager {
     public void unlinkDoor(DoorRecord door, CommandSource notify, boolean applyCooldown) {
         if (!door.isPaired()) return;
         DoorRecord other = registry.byId(door.pairedId());
+        String actor = notify == null || notify.sender() == null ? "System"
+                : notify.sender().getName();
+        plugin.logs().log(door, actor, top.midream.ddoor.log.DoorLog.ACTION_UNLINK);
         door.pairedId(null);
         persist(door);
         if (other != null) {

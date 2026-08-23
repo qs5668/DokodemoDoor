@@ -34,9 +34,15 @@ public class DoorRecord {
     private UUID pairedId;
     private final long createdAt;
     private long uses;
+    private boolean enabled = true;
 
     public DoorRecord(UUID id, String name, UUID owner, String world, int x, int y, int z,
                       BlockFace facing, UUID pairedId, long createdAt, long uses) {
+        this(id, name, owner, world, x, y, z, facing, pairedId, createdAt, uses, true);
+    }
+
+    public DoorRecord(UUID id, String name, UUID owner, String world, int x, int y, int z,
+                      BlockFace facing, UUID pairedId, long createdAt, long uses, boolean enabled) {
         this.id = id;
         this.name = name;
         this.owner = owner;
@@ -48,6 +54,7 @@ public class DoorRecord {
         this.pairedId = pairedId;
         this.createdAt = createdAt;
         this.uses = uses;
+        this.enabled = enabled;
     }
 
     public UUID id() { return id; }
@@ -65,6 +72,8 @@ public class DoorRecord {
     public long uses() { return uses; }
     public void uses(long uses) { this.uses = uses; }
     public void incrementUses() { uses++; }
+    public boolean enabled() { return enabled; }
+    public void enabled(boolean enabled) { this.enabled = enabled; }
 
     public boolean isPaired() { return pairedId != null; }
 }

@@ -27,14 +27,25 @@ import java.util.UUID;
 /** Identifies a DoorMenu inventory and carries its per-open session state. */
 public final class DoorMenuHolder implements InventoryHolder {
 
+    public enum Type { LIST, DETAIL, SETTINGS, LOGS }
+
     private final UUID viewer;
-    private final int page;
-    private final int pages;
+    private final Type type;
+    private int page;
+    private int pages;
+    private final UUID doorId;
     private final Map<Integer, UUID> slotDoors = new HashMap<>();
     private Inventory inventory;
 
-    public DoorMenuHolder(UUID viewer, int page, int pages) {
+    public DoorMenuHolder(UUID viewer, Type type, int page, int pages, UUID doorId) {
         this.viewer = viewer;
+        this.type = type;
+        this.page = page;
+        this.pages = pages;
+        this.doorId = doorId;
+    }
+
+    void pageOverride(int page, int pages) {
         this.page = page;
         this.pages = pages;
     }
@@ -51,12 +62,20 @@ public final class DoorMenuHolder implements InventoryHolder {
         return viewer;
     }
 
+    public Type type() {
+        return type;
+    }
+
     public int page() {
         return page;
     }
 
     public int pages() {
         return pages;
+    }
+
+    public UUID doorId() {
+        return doorId;
     }
 
     @Override

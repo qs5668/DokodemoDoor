@@ -15,11 +15,17 @@ teleport:
   fade-effect: true      # 传送瞬间屏幕渐暗过渡
   anti-fall-ticks: 40    # 落点抗性时长（防加载延迟摔伤，0 关闭）
   deny-vehicles: true    # 骑乘状态禁止传送
+  default-mode: WALK     # 新玩家默认传送触发方式: WALK(走近) / RIGHT_CLICK(右键) / LEFT_CLICK(左键)
 
 pairing:
   session-timeout-seconds: 60  # 待配对会话 TTL
   default-limit: 3             # 无 ddoor.limit.<n> 时的门对上限
   unlink-cooldown-seconds: 10  # 同一门解绑后的再绑定冷却
+
+logs:
+  enabled: true           # 门交互记录（传送/配对/解绑/破坏）
+  retention-days: 30      # 记录保留天数（0 = 永久保留）
+  load-days: 7            # 启动时加载最近多少天的记录到内存（GUI 查询用）
 
 visual:
   idle-particle: true    # 待机粒子开关

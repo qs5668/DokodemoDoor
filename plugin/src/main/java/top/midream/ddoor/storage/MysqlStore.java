@@ -21,6 +21,7 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.Plugin;
 import top.midream.ddoor.door.DoorRecord;
+import top.midream.ddoor.log.DoorLog;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -29,7 +30,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
 
@@ -47,7 +50,30 @@ public class MysqlStore implements DoorStore {
               facing VARCHAR(16) NOT NULL,
               paired_id CHAR(36) NULL,
               created_at BIGINT NOT NULL,
-              uses BIGINT NOT NULL DEFAULT 0
+              uses BIGINT NOT NULL DEFAULT 0,
+              enabled TINYINT NOT NULL DEFAULT 1
+            )""";
+
+    private static final String SETTINGS_SCHEMA = """
+            CREATE TABLE IF NOT EXISTS ddoor_player_settings (
+              uuid CHAR(36) PRIMARY KEY,
+              mode VARCHAR(16) NOT NULL DEFAULT 'WALK',
+              simple_info TINYINT NOT NULL DEFAULT 0
+            )""";
+
+    private static final String LOGS_SCHEMA = """
+            CREATE TABLE IF NOT EXISTS ddoor_logs (
+              id BIGINT AUTO_INCREMENT PRIMARY KEY,
+              door_id CHAR(36) NOT NULL,
+              door_name VARCHAR(32) NOT NULL,
+              world VARCHAR(64) NOT NULL,
+              x INT NOT NULL,
+              y INT NOT NULL,
+              z INT NOT NULL,
+              player_name VARCHAR(17) NOT NULL,
+              action VARCHAR(12) NOT NULL,
+              time BIGINT NOT NULL,
+              INDEX idx_ddoor_logs_time (time)
             )""";
 
     private final Plugin plugin;
@@ -71,6 +97,21 @@ public class MysqlStore implements DoorStore {
         conn = DriverManager.getConnection("jdbc:mysql://" + host + ":" + port + "/" + db, props);
         try (Statement st = conn.createStatement()) {
             st.execute(SCHEMA);
+            st.execute(SETTINGS_SCHEMA);
+            st.execute(LOGS_SCHEMA);
+        }
+        migrateDoorsEnabled();
+    }
+
+    /** v1.0.2 installs lack the enabled column — add it without touching data. */
+    private void migrateDoorsEnabled() throws SQLException {
+        try (PreparedStatement ps = conn.prepareStatement(
+                "SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='ddoor_doors' AND COLUMN_NAME='enabled'");
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next() && rs.getInt(1) > 0) return;
+        }
+        try (Statement st = conn.createStatement()) {
+            st.execute("ALTER TABLE ddoor_doors ADD COLUMN enabled TINYINT NOT NULL DEFAULT 1");
         }
     }
 
@@ -88,7 +129,7 @@ public class MysqlStore implements DoorStore {
     @Override
     public void upsert(DoorRecord door) throws Exception {
         try (PreparedStatement ps = conn.prepareStatement(
-                "REPLACE INTO ddoor_doors (id,name,owner,world,x,y,z,facing,paired_id,created_at,uses) VALUES (?,?,?,?,?,?,?,?,?,?,?)")) {
+                "REPLACE INTO ddoor_doors (id,name,owner,world,x,y,z,facing,paired_id,created_at,uses,enabled) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)")) {
             SqliteStore.bind(ps, door);
             ps.executeUpdate();
         }
@@ -98,6 +139,62 @@ public class MysqlStore implements DoorStore {
     public void delete(UUID id) throws Exception {
         try (PreparedStatement ps = conn.prepareStatement("DELETE FROM ddoor_doors WHERE id=?")) {
             ps.setString(1, id.toString());
+            ps.executeUpdate();
+        }
+    }
+
+    @Override
+    public Map<UUID, PlayerPrefs> loadPlayerSettings() throws Exception {
+        Map<UUID, PlayerPrefs> out = new HashMap<>();
+        try (Statement st = conn.createStatement();
+             ResultSet rs = st.executeQuery("SELECT uuid,mode,simple_info FROM ddoor_player_settings")) {
+            while (rs.next()) {
+                out.put(UUID.fromString(rs.getString("uuid")),
+                        new PlayerPrefs(rs.getString("mode"), rs.getInt("simple_info") != 0));
+            }
+        }
+        return out;
+    }
+
+    @Override
+    public void savePlayerSettings(UUID uuid, String mode, boolean simpleInfo) throws Exception {
+        try (PreparedStatement ps = conn.prepareStatement(
+                "REPLACE INTO ddoor_player_settings (uuid,mode,simple_info) VALUES (?,?,?)")) {
+            ps.setString(1, uuid.toString());
+            ps.setString(2, mode);
+            ps.setInt(3, simpleInfo ? 1 : 0);
+            ps.executeUpdate();
+        }
+    }
+
+    @Override
+    public void insertLog(DoorLog log) throws Exception {
+        try (PreparedStatement ps = conn.prepareStatement(
+                "INSERT INTO ddoor_logs (door_id,door_name,world,x,y,z,player_name,action,time) VALUES (?,?,?,?,?,?,?,?,?)")) {
+            SqliteStore.bindLog(ps, log);
+            ps.executeUpdate();
+        }
+    }
+
+    @Override
+    public List<DoorLog> loadRecentLogs(long sinceMillis) throws Exception {
+        List<DoorLog> out = new ArrayList<>();
+        try (PreparedStatement ps = conn.prepareStatement(
+                "SELECT door_id,door_name,world,x,y,z,player_name,action,time FROM ddoor_logs WHERE time>=? ORDER BY time DESC")) {
+            ps.setLong(1, sinceMillis);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    out.add(SqliteStore.fromLogRow(rs));
+                }
+            }
+        }
+        return out;
+    }
+
+    @Override
+    public void cleanupLogs(long beforeMillis) throws Exception {
+        try (PreparedStatement ps = conn.prepareStatement("DELETE FROM ddoor_logs WHERE time<?")) {
+            ps.setLong(1, beforeMillis);
             ps.executeUpdate();
         }
     }

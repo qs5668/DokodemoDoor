@@ -244,15 +244,37 @@ public class DDoorCommand implements CommandExecutor, TabCompleter {
     }
 
     private void stats(CommandSender sender) {
+        if (sender instanceof Player player) {
+            int limit = pairs.limitOf(player);
+            String limitText = limit < 0 ? "∞" : String.valueOf(limit);
+            String modeKey = switch (plugin.settings().modeOf(player.getUniqueId())) {
+                case WALK -> "walk";
+                case RIGHT_CLICK -> "right";
+                case LEFT_CLICK -> "left";
+            };
+            msg.send(sender, "cmd.stats-mine-header");
+            msg.send(sender, "cmd.stats-mine",
+                    "pairs", registry.pairsOf(player.getUniqueId()),
+                    "limit", limitText,
+                    "uses", registry.usesOf(player.getUniqueId()));
+            msg.send(sender, "cmd.stats-mine-line2",
+                    "mode", msg.raw("gui.mode-" + modeKey),
+                    "info", msg.raw(plugin.settings().simpleOf(player.getUniqueId())
+                            ? "gui.info-mode-simple" : "gui.info-mode-detailed"));
+        }
         if (!sender.hasPermission("ddoor.admin")) {
-            msg.send(sender, "cmd.no-permission");
+            if (!(sender instanceof Player)) {
+                msg.send(sender, "cmd.no-permission");
+            }
             return;
         }
         msg.send(sender, "cmd.stats-header");
         msg.send(sender, "cmd.stats-total",
                 "pairs", registry.totalPairs(),
                 "doors", registry.all().size(),
-                "uses", registry.totalUses());
+                "uses", registry.totalUses(),
+                "logs", plugin.logs().enabled()
+                        ? plugin.logs().countLoaded() : -1);
     }
 
     private void reload(CommandSender sender) {

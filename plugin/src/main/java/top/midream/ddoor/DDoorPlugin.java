@@ -29,9 +29,13 @@ import top.midream.ddoor.hook.PapiHook;
 import top.midream.ddoor.hook.VaultHook;
 import top.midream.ddoor.key.KeyItem;
 import top.midream.ddoor.listener.BlockWatcher;
+import top.midream.ddoor.listener.InteractListener;
+import top.midream.ddoor.listener.JoinListener;
 import top.midream.ddoor.listener.KeyUseListener;
 import top.midream.ddoor.listener.MoveListener;
+import top.midream.ddoor.log.DoorLogManager;
 import top.midream.ddoor.platform.TextAdapter;
+import top.midream.ddoor.player.PlayerSettings;
 import top.midream.ddoor.storage.DoorStore;
 import top.midream.ddoor.storage.MysqlStore;
 import top.midream.ddoor.storage.SqliteStore;
@@ -52,6 +56,8 @@ public final class DDoorPlugin extends JavaPlugin {
     private DoorStore store;
     private WriteQueue writeQueue;
     private PortalRegistry registry;
+    private PlayerSettings settings;
+    private DoorLogManager logs;
     private PairManager pairs;
     private TeleportEngine engine;
     private KeyItem keyItem;
@@ -93,6 +99,11 @@ public final class DDoorPlugin extends JavaPlugin {
             getLogger().log(Level.SEVERE, "failed to load doors from storage", e);
         }
 
+        settings = new PlayerSettings(this);
+        settings.load();
+        logs = new DoorLogManager(this);
+        logs.load();
+
         vault = new VaultHook();
         if (cfg.economyEnabled) {
             if (vault.setup()) {
@@ -103,14 +114,17 @@ public final class DDoorPlugin extends JavaPlugin {
         }
 
         pairs = new PairManager(this, registry, writeQueue, msg, vault);
-        engine = new TeleportEngine(this, registry, pairs, msg, vault);
+        engine = new TeleportEngine(this, registry, pairs, msg, vault, settings, logs);
         keyItem = new KeyItem(this, msg);
         menu = new DoorMenu(this);
 
+        JoinListener joinListener = new JoinListener(this);
         getServer().getPluginManager().registerEvents(new KeyUseListener(pairs, keyItem), this);
-        getServer().getPluginManager().registerEvents(new MoveListener(registry, engine), this);
-        getServer().getPluginManager().registerEvents(new BlockWatcher(pairs, registry, msg), this);
-        getServer().getPluginManager().registerEvents(new MenuListener(menu), this);
+        getServer().getPluginManager().registerEvents(new MoveListener(registry, engine, settings), this);
+        getServer().getPluginManager().registerEvents(new InteractListener(settings, registry, engine, keyItem, pairs), this);
+        getServer().getPluginManager().registerEvents(new BlockWatcher(this, pairs, registry, msg), this);
+        getServer().getPluginManager().registerEvents(new MenuListener(this, menu), this);
+        getServer().getPluginManager().registerEvents(joinListener, this);
 
         PluginCommand cmd = getCommand("ddoor");
         if (cmd != null) {
@@ -120,10 +134,15 @@ public final class DDoorPlugin extends JavaPlugin {
         }
 
         keyItem.registerRecipe();
+        for (org.bukkit.entity.Player online : getServer().getOnlinePlayers()) {
+            joinListener.discover(online);
+        }
 
         new ParticleTask(this, registry, pairs).runTaskTimer(this, 40L, 4L);
         new AuditTask(this, registry, pairs).runTaskTimer(this, 100L, cfg.auditIntervalSeconds * 20L);
         getServer().getScheduler().runTaskTimer(this, pairs::tickCleanup, 20L, 20L);
+        getServer().getScheduler().runTaskTimer(this,
+                () -> logs.cleanup(System.currentTimeMillis()), 20L * 60L, 20L * 60L);
 
         if (cfg.hookPapi && getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) {
             papiHook = new PapiHook(this, registry);
@@ -157,7 +176,10 @@ public final class DDoorPlugin extends JavaPlugin {
     public TextAdapter text() { return text; }
     public Msg msg() { return msg; }
     public DoorStore store() { return store; }
+    public WriteQueue writes() { return writeQueue; }
     public PortalRegistry registry() { return registry; }
+    public PlayerSettings settings() { return settings; }
+    public DoorLogManager logs() { return logs; }
     public PairManager pairs() { return pairs; }
     public TeleportEngine engine() { return engine; }
     public KeyItem keyItem() { return keyItem; }

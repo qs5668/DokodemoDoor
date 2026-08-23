@@ -78,4 +78,8 @@ public final class KeyItem {
         recipe.setIngredient('E', Material.ENDER_EYE);
         plugin.getServer().addRecipe(recipe);
     }
+
+    public NamespacedKey recipeKey() {
+        return new NamespacedKey(plugin, "door_key");
+    }
 }

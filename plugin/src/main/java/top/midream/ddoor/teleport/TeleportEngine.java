@@ -32,6 +32,9 @@ import top.midream.ddoor.door.DoorRecord;
 import top.midream.ddoor.door.PairManager;
 import top.midream.ddoor.door.PortalRegistry;
 import top.midream.ddoor.hook.VaultHook;
+import top.midream.ddoor.log.DoorLog;
+import top.midream.ddoor.log.DoorLogManager;
+import top.midream.ddoor.player.PlayerSettings;
 import top.midream.ddoor.util.Msg;
 import top.midream.ddoor.visual.Fx;
 
@@ -42,7 +45,8 @@ import java.util.UUID;
 /**
  * The six-gate teleport chain, executed on the main thread, microsecond-scale
  * per gate: cooldown -> permission -> counterpart validity -> destination
- * world -> landing safety -> teleport.
+ * world -> landing safety -> teleport. Failure messages are verbose unless
+ * the player enabled simplified info.
  */
 public class TeleportEngine {
 
@@ -59,15 +63,20 @@ public class TeleportEngine {
     private final PairManager pairs;
     private final Msg msg;
     private final VaultHook vault;
+    private final PlayerSettings settings;
+    private final DoorLogManager logs;
 
     private final Map<UUID, Long> lastTeleport = new HashMap<>();
 
-    public TeleportEngine(DDoorPlugin plugin, PortalRegistry registry, PairManager pairs, Msg msg, VaultHook vault) {
+    public TeleportEngine(DDoorPlugin plugin, PortalRegistry registry, PairManager pairs, Msg msg,
+                          VaultHook vault, PlayerSettings settings, DoorLogManager logs) {
         this.plugin = plugin;
         this.registry = registry;
         this.pairs = pairs;
         this.msg = msg;
         this.vault = vault;
+        this.settings = settings;
+        this.logs = logs;
     }
 
     private DDoorConfig cfg() {
@@ -94,24 +103,42 @@ public class TeleportEngine {
         DoorRecord dst = registry.byId(entry.pairedId());
         if (dst == null || !isDoorAt(dst)) {
             pairs.unlinkDoor(entry, null, true);
-            msg.send(player, "tp.pair-broken");
+            if (simple(player)) {
+                msg.send(player, "tp.pair-broken");
+            } else {
+                msg.send(player, "tp.pair-broken-detail",
+                        "name", dst == null ? entry.name() : dst.name(),
+                        "world", dst == null ? "?" : dst.world(),
+                        "x", dst == null ? 0 : dst.x(),
+                        "y", dst == null ? 0 : dst.y(),
+                        "z", dst == null ? 0 : dst.z());
+            }
+            return;
+        }
+        // gate 3.5: owner may have disabled the pair
+        if (!entry.enabled() || !dst.enabled()) {
+            msg.send(player, "tp.disabled", "name", entry.name());
             return;
         }
         // gate 4: destination world usable
         World world = Bukkit.getWorld(dst.world());
-        if (world == null) {
-            msg.send(player, "tp.world-denied");
-            return;
-        }
-        if (!player.hasPermission("ddoor.bypass.world") && !pairs.worldAllowed(dst.world())) {
-            msg.send(player, "tp.world-denied");
+        if (world == null || (!player.hasPermission("ddoor.bypass.world") && !pairs.worldAllowed(dst.world()))) {
+            if (simple(player)) {
+                msg.send(player, "tp.world-denied");
+            } else {
+                msg.send(player, "tp.world-denied-detail", "world", dst.world());
+            }
             return;
         }
         // gate 5: landing safety (with side probing)
         Block dstAnchor = world.getBlockAt(dst.x(), dst.y(), dst.z());
         Location landing = safeLanding(dstAnchor, dst.facing());
         if (landing == null) {
-            msg.send(player, "tp.unsafe");
+            if (simple(player)) {
+                msg.send(player, "tp.unsafe");
+            } else {
+                msg.send(player, "tp.unsafe-detail", "detail", unsafeDetail(dstAnchor, dst.facing()));
+            }
             return;
         }
         // economy charge
@@ -148,6 +175,7 @@ public class TeleportEngine {
                 dst.incrementUses();
                 pairs.persist(entry);
                 pairs.persist(dst);
+                logs.log(entry, player.getName(), DoorLog.ACTION_TELEPORT);
                 if (cfg().economyEnabled && vault.isEnabled() && cfg().useCost > 0) {
                     msg.send(player, "tp.charged", "cost", vault.format(cfg().useCost));
                 }
@@ -191,6 +219,37 @@ public class TeleportEngine {
         return feet.getRelative(BlockFace.DOWN).getType().isSolid();
     }
 
+    /** Human-readable reason why the landing in front of the door is blocked. */
+    private String unsafeDetail(Block anchor, BlockFace facing) {
+        Block front = anchor.getRelative(facing);
+        if (!front.isPassable()) {
+            return describe(front, "tp.unsafe-blocked-feet");
+        }
+        Block head = front.getRelative(BlockFace.UP);
+        if (!head.isPassable()) {
+            return describe(head, "tp.unsafe-blocked-head");
+        }
+        Block floor = front.getRelative(BlockFace.DOWN);
+        if (!floor.getType().isSolid()) {
+            return describe(floor, "tp.unsafe-no-floor");
+        }
+        return describe(front, "tp.unsafe-blocked-feet");
+    }
+
+    private String describe(Block block, String key) {
+        String raw = msg.raw(key);
+        if (raw == null) return key;
+        return raw.replace("{world}", block.getWorld().getName())
+                .replace("{x}", String.valueOf(block.getX()))
+                .replace("{y}", String.valueOf(block.getY()))
+                .replace("{z}", String.valueOf(block.getZ()))
+                .replace("{block}", block.getType().name());
+    }
+
+    private boolean simple(Player player) {
+        return settings.simpleOf(player.getUniqueId());
+    }
+
     private Location center(Block block) {
         return new Location(block.getWorld(), block.getX() + 0.5, block.getY(), block.getZ() + 0.5);
     }
@@ -206,19 +265,30 @@ public class TeleportEngine {
 
     /**
      * Direct teleport to a door's front (command/GUI path). Unlike the
-     * walk-through chain this trusts the caller's permission checks.
+     * walk-through chain this trusts the caller's permission checks,
+     * but still refuses disabled pairs and unsafe landings.
      */
     public void commandTeleport(Player player, DoorRecord door) {
+        if (!door.enabled()) {
+            msg.send(player, "tp.disabled", "name", door.name());
+            return;
+        }
         World world = Bukkit.getWorld(door.world());
         if (world == null) {
-            msg.send(player, "tp.world-denied");
+            msg.send(player, "tp.world-denied-detail", "world", door.world());
             return;
         }
         BlockFace facing = door.facing();
-        Location dest = new Location(world,
-                door.x() + 0.5 + facing.getModX(),
-                door.y(),
-                door.z() + 0.5 + facing.getModZ());
+        Block anchor = world.getBlockAt(door.x(), door.y(), door.z());
+        Location dest = safeLanding(anchor, facing);
+        if (dest == null) {
+            if (simple(player)) {
+                msg.send(player, "tp.unsafe");
+            } else {
+                msg.send(player, "tp.unsafe-detail", "detail", unsafeDetail(anchor, facing));
+            }
+            return;
+        }
         dest.setYaw(yawOf(facing));
         dest.setPitch(0f);
         lastTeleport.put(player.getUniqueId(), System.currentTimeMillis());
@@ -226,6 +296,7 @@ public class TeleportEngine {
             if (Boolean.TRUE.equals(ok)) {
                 door.incrementUses();
                 pairs.persist(door);
+                logs.log(door, player.getName(), DoorLog.ACTION_TELEPORT);
                 Fx.tpArrive(dest);
                 action(player, "tp.success", "world", world.getName());
             }

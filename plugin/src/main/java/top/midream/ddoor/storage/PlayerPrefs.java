@@ -17,32 +17,6 @@
  */
 package top.midream.ddoor.storage;
 
-import top.midream.ddoor.door.DoorRecord;
-import top.midream.ddoor.log.DoorLog;
-
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
-public interface DoorStore {
-
-    void init() throws Exception;
-
-    List<DoorRecord> loadAll() throws Exception;
-
-    void upsert(DoorRecord door) throws Exception;
-
-    void delete(UUID id) throws Exception;
-
-    Map<UUID, PlayerPrefs> loadPlayerSettings() throws Exception;
-
-    void savePlayerSettings(UUID uuid, String mode, boolean simpleInfo) throws Exception;
-
-    void insertLog(DoorLog log) throws Exception;
-
-    List<DoorLog> loadRecentLogs(long sinceMillis) throws Exception;
-
-    void cleanupLogs(long beforeMillis) throws Exception;
-
-    void close();
+/** Persisted per-player preferences as loaded from the settings table. */
+public record PlayerPrefs(String mode, boolean simpleInfo) {
 }

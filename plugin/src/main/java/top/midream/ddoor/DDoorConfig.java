@@ -34,10 +34,15 @@ public class DDoorConfig {
     public final boolean fadeEffect;
     public final int antiFallTicks;
     public final boolean denyVehicles;
+    public final String defaultTeleportMode;
 
     public final int sessionTimeoutSeconds;
     public final int defaultLimit;
     public final int unlinkCooldownSeconds;
+
+    public final boolean logsEnabled;
+    public final int logsRetentionDays;
+    public final int logsLoadDays;
 
     public final boolean idleParticle;
     public final int particleRange;
@@ -67,11 +72,17 @@ public class DDoorConfig {
         fadeEffect = tp.getBoolean("fade-effect", true);
         antiFallTicks = tp.getInt("anti-fall-ticks", 40);
         denyVehicles = tp.getBoolean("deny-vehicles", true);
+        defaultTeleportMode = tp.getString("default-mode", "WALK");
 
         ConfigurationSection pair = plugin.getConfig().getConfigurationSection("pairing");
         sessionTimeoutSeconds = pair.getInt("session-timeout-seconds", 60);
         defaultLimit = pair.getInt("default-limit", 3);
         unlinkCooldownSeconds = pair.getInt("unlink-cooldown-seconds", 10);
+
+        ConfigurationSection logs = plugin.getConfig().getConfigurationSection("logs");
+        logsEnabled = logs.getBoolean("enabled", true);
+        logsRetentionDays = logs.getInt("retention-days", 30);
+        logsLoadDays = logs.getInt("load-days", 7);
 
         ConfigurationSection visual = plugin.getConfig().getConfigurationSection("visual");
         idleParticle = visual.getBoolean("idle-particle", true);

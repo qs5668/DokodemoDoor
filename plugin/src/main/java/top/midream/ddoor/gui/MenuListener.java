@@ -17,17 +17,24 @@
  */
 package top.midream.ddoor.gui;
 
+import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
+import top.midream.ddoor.DDoorPlugin;
 
-/** Routes inventory events for DoorMenu sessions. */
+/** Routes inventory events for DoorMenu sessions and chat lines for renames. */
 public final class MenuListener implements Listener {
 
+    private final DDoorPlugin plugin;
     private final DoorMenu menu;
 
-    public MenuListener(DoorMenu menu) {
+    public MenuListener(DDoorPlugin plugin, DoorMenu menu) {
+        this.plugin = plugin;
         this.menu = menu;
     }
 
@@ -41,5 +48,20 @@ public final class MenuListener implements Listener {
         if (event.getInventory().getHolder() instanceof DoorMenuHolder) {
             event.setCancelled(true);
         }
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onChat(AsyncPlayerChatEvent event) {
+        java.util.UUID doorId = menu.pollRename(event.getPlayer().getUniqueId());
+        if (doorId == null) return;
+        event.setCancelled(true);
+        String input = event.getMessage();
+        Bukkit.getScheduler().runTask(plugin, () ->
+                menu.applyRename(event.getPlayer(), doorId, input));
+    }
+
+    @EventHandler
+    public void onQuit(PlayerQuitEvent event) {
+        menu.clearRename(event.getPlayer().getUniqueId());
     }
 }

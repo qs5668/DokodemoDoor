@@ -28,6 +28,7 @@ import org.bukkit.event.block.BlockExplodeEvent;
 import org.bukkit.event.block.BlockPistonExtendEvent;
 import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
+import top.midream.ddoor.DDoorPlugin;
 import top.midream.ddoor.door.DoorBlocks;
 import top.midream.ddoor.door.DoorRecord;
 import top.midream.ddoor.door.PairManager;
@@ -40,11 +41,13 @@ import java.util.List;
 /** Unlinks/removes door records the moment a door block disappears. */
 public class BlockWatcher implements Listener {
 
+    private final DDoorPlugin plugin;
     private final PairManager pairs;
     private final PortalRegistry registry;
     private final Msg msg;
 
-    public BlockWatcher(PairManager pairs, PortalRegistry registry, Msg msg) {
+    public BlockWatcher(DDoorPlugin plugin, PairManager pairs, PortalRegistry registry, Msg msg) {
+        this.plugin = plugin;
         this.pairs = pairs;
         this.registry = registry;
         this.msg = msg;
@@ -52,42 +55,43 @@ public class BlockWatcher implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onBreak(BlockBreakEvent event) {
-        handleRemoved(event.getBlock());
+        handleRemoved(event.getBlock(), event.getPlayer().getName());
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onBurn(BlockBurnEvent event) {
-        handleRemoved(event.getBlock());
+        handleRemoved(event.getBlock(), null);
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onEntityExplode(EntityExplodeEvent event) {
         List<Block> copy = new ArrayList<>(event.blockList());
-        for (Block b : copy) handleRemoved(b);
+        for (Block b : copy) handleRemoved(b, null);
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onBlockExplode(BlockExplodeEvent event) {
         List<Block> copy = new ArrayList<>(event.blockList());
-        for (Block b : copy) handleRemoved(b);
+        for (Block b : copy) handleRemoved(b, null);
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onPistonExtend(BlockPistonExtendEvent event) {
-        for (Block b : event.getBlocks()) handleRemoved(b);
+        for (Block b : event.getBlocks()) handleRemoved(b, null);
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onPistonRetract(BlockPistonRetractEvent event) {
-        for (Block b : event.getBlocks()) handleRemoved(b);
+        for (Block b : event.getBlocks()) handleRemoved(b, null);
     }
 
-    private void handleRemoved(Block block) {
+    private void handleRemoved(Block block, String actor) {
         if (!DoorBlocks.isDoor(block)) return;
         Block anchor = DoorBlocks.anchorOf(block);
         if (anchor == null) return;
         DoorRecord door = registry.at(anchor.getWorld().getName(), anchor.getX(), anchor.getY(), anchor.getZ());
         if (door == null) return;
+        plugin.logs().log(door, actor == null ? "World" : actor, top.midream.ddoor.log.DoorLog.ACTION_BREAK);
         pairs.removeDoor(door, true);
         Player owner = Bukkit.getPlayer(door.owner());
         if (owner != null && owner.isOnline()) {

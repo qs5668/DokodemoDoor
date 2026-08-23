@@ -15,34 +15,31 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-package top.midream.ddoor.storage;
+package top.midream.ddoor.listener;
 
-import top.midream.ddoor.door.DoorRecord;
-import top.midream.ddoor.log.DoorLog;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerJoinEvent;
+import top.midream.ddoor.DDoorPlugin;
 
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+/** Auto-discovers the door key recipe in the player's recipe book. */
+public class JoinListener implements Listener {
 
-public interface DoorStore {
+    private final DDoorPlugin plugin;
 
-    void init() throws Exception;
+    public JoinListener(DDoorPlugin plugin) {
+        this.plugin = plugin;
+    }
 
-    List<DoorRecord> loadAll() throws Exception;
+    @EventHandler
+    public void onJoin(PlayerJoinEvent event) {
+        discover(event.getPlayer());
+    }
 
-    void upsert(DoorRecord door) throws Exception;
-
-    void delete(UUID id) throws Exception;
-
-    Map<UUID, PlayerPrefs> loadPlayerSettings() throws Exception;
-
-    void savePlayerSettings(UUID uuid, String mode, boolean simpleInfo) throws Exception;
-
-    void insertLog(DoorLog log) throws Exception;
-
-    List<DoorLog> loadRecentLogs(long sinceMillis) throws Exception;
-
-    void cleanupLogs(long beforeMillis) throws Exception;
-
-    void close();
+    public void discover(Player player) {
+        if (plugin.cfg().keyCraftable) {
+            player.discoverRecipe(plugin.keyItem().recipeKey());
+        }
+    }
 }

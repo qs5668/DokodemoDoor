@@ -23,11 +23,14 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
 import top.midream.ddoor.door.DoorRecord;
 import top.midream.ddoor.door.PortalRegistry;
+import top.midream.ddoor.player.PlayerSettings;
 import top.midream.ddoor.teleport.TeleportEngine;
 
 /**
  * PlayerMoveEvent gate: block-coordinate coarse filter first (one comparison),
  * then O(1) registry lookups over the player's AABB-covered blocks.
+ * Only serves players whose teleport mode is WALK; click modes are
+ * handled by InteractListener.
  */
 public class MoveListener implements Listener {
 
@@ -36,10 +39,12 @@ public class MoveListener implements Listener {
 
     private final PortalRegistry registry;
     private final TeleportEngine engine;
+    private final PlayerSettings settings;
 
-    public MoveListener(PortalRegistry registry, TeleportEngine engine) {
+    public MoveListener(PortalRegistry registry, TeleportEngine engine, PlayerSettings settings) {
         this.registry = registry;
         this.engine = engine;
+        this.settings = settings;
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -52,6 +57,7 @@ public class MoveListener implements Listener {
             return;
         }
         if (to.getWorld() == null) return;
+        if (settings.modeOf(event.getPlayer().getUniqueId()) != PlayerSettings.Mode.WALK) return;
         String world = to.getWorld().getName();
 
         // gate 2: O(1) index lookups over AABB-covered blocks
