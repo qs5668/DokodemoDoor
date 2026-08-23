@@ -620,7 +620,7 @@ footer {
       <div class="feat-icon"><span class="px ring"></span></div>
       <div class="feat-tag">VANILLA FEEL</div>
       <h3>原版门的手感</h3>
-      <p>触发方式就是"走进门框"，和下界门一样自然。配好之后你几乎感觉不到插件的存在——门就是变魔法了。</p>
+      <p>默认触发方式就是"走进门框"，和下界门一样自然。不喜欢误触？在设置里一键改成右键或左键点击触发。</p>
     </div>
   </div>
 </section>
@@ -674,7 +674,7 @@ footer {
         <div class="chat-line dim">* 演示已就绪，点击「执行下一步」开始 *</div>
       </div>
     </div>
-    <div class="demo-hint">三个动作总结：<b>放门</b> → 手持门之钥<b>右键两扇门</b> → <b>走进去</b>。第二扇门要在选完第一扇后的 60 秒内右键，超时就得重新开始。</div>
+    <div class="demo-hint">三个动作总结：<b>放门</b> → 手持门之钥<b>右键两扇门</b> → <b>走进去</b>（也可以改成右键/左键点击触发）。第二扇门要在选完第一扇后的 60 秒内右键，超时就得重新开始。</div>
   </div>
 
   <figure class="travel-img">
@@ -718,7 +718,7 @@ footer {
       </div>
       <div class="recipe-note">一把钥匙绑一对门 · 剩下那把可以留着下一次，或者卖给别的玩家</div>
     </div>
-    <div class="demo-hint">钥匙上有<b>防伪标记</b>，铁砧改名伪造不出来；在合成台直接照摆即可，无需解锁配方书。</div>
+    <div class="demo-hint">钥匙上有<b>防伪标记</b>，铁砧改名伪造不出来。进服时配方<b>自动解锁进配方书</b>，按 E 打开物品栏就能翻到，也可在合成台直接照摆。</div>
   </div>
 
   <div class="mats">
@@ -798,7 +798,7 @@ footer {
       <div class="try-cd" id="tryCd"><div class="try-cd-fill" id="tryCdFill"></div></div>
       <div class="try-status" id="tryStatus">点击门，穿越到下界。（和游戏里一样，传送后有 3 秒冷却）</div>
     </div>
-    <div class="demo-hint">这不是录像，是页面里的小互动——游戏里的真实体验比这更细腻：有音效、有粒子漩涡，还有落点的自动保护（对面被堵住时不会把你卡进方块里）。</div>
+    <div class="demo-hint">这不是录像，是页面里的小互动——游戏里的真实体验比这更细腻：有音效、有粒子漩涡，还有落点的自动保护（对面被堵住时不会把你卡进方块里，并且会告诉你<b>是哪个坐标的什么方块</b>挡住了路）。</div>
   </div>
 </section>
 
@@ -843,7 +843,7 @@ footer {
       <span class="rule-no">05</span>
       <div>
         <h4>落点自动保护</h4>
-        <p>对面门口如果被方块堵住，插件会自动找旁边的安全位置，绝不会把你卡进方块或虚空。</p>
+        <p>对面门口如果被方块堵住，插件会自动找旁边的安全位置，绝不会把你卡进方块或虚空。传送失败时还会报出<b>具体是哪个坐标的什么方块</b>挡路，改起来不抓瞎。</p>
       </div>
     </div>
     <div class="rule-card">
@@ -891,7 +891,19 @@ footer {
     </div>
     <div class="faq-item">
       <button class="faq-q"><span class="q-mark">Q</span>有命令可以用吗？<span class="arrow"></span></button>
-      <div class="faq-a"><div class="faq-a-inner">有，但日常完全用不到。想管理自己的门可以输 <span class="code">/ddoor gui</span> 打开图形菜单：分页看到自己所有的门对，左键点一下直接传送过去，Shift+右键解除配对，还能看自己的穿越统计。文字命令 <span class="code">/ddoor list / rename / unlink</span> 也都还在。</div></div>
+      <div class="faq-a"><div class="faq-a-inner">有，但日常完全用不到。想管理自己的门可以输 <span class="code">/ddoor gui</span> 打开图形菜单：门对列表里<b>左键传送、右键进详情</b>；详情页能看到两端的世界、坐标、朝向、群系和穿越次数，还能一键<b>停用/启用、重命名、解除配对</b>；个人设置页可以切换传送触发方式和信息显示档位。文字命令 <span class="code">/ddoor list / rename / unlink / stats</span> 也都还在。</div></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q"><span class="q-mark">Q</span>一靠近门就传走了，能改成点击触发吗？<span class="arrow"></span></button>
+      <div class="faq-a"><div class="faq-a-inner">能。打开 <span class="code">/ddoor gui</span> → 个人设置，传送触发方式有三种可选：<b>走近传送</b>（默认）、<b>右键点击传送</b>、<b>左键点击传送</b>。左键模式下潜行开门/拆门不受影响，手持门之钥时也照常优先配对。</div></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q"><span class="q-mark">Q</span>怎么知道谁用过我的门？<span class="arrow"></span></button>
+      <div class="faq-a"><div class="faq-a-inner">门主打开 <span class="code">/ddoor gui</span>，右键门对进详情，里面有<b>交互记录</b>：谁、什么时候、做了什么（传送/配对/解绑/破坏），分页查看。记录只有你和服务器管理员能看到。</div></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q"><span class="q-mark">Q</span>传送失败的提示太啰嗦了，能精简吗？<span class="arrow"></span></button>
+      <div class="faq-a"><div class="faq-a-inner">能。默认报详细原因（哪个坐标的什么方块挡住了落点或头部、对侧门在哪个世界哪个坐标被破坏）是为了方便你自己修；嫌吵的话在 <span class="code">/ddoor gui</span> → 个人设置里开启<b>简化信息显示</b>，报错和门对信息会一起变精简。</div></div>
     </div>
   </div>
 </section>
