@@ -1,6 +1,6 @@
 # 任意门 DokodemoDoor
 
-配对式跨世界传送门插件，面向 Paper / Leaves / Purpur / Spigot 1.21.8（Java 21）。
+配对式跨世界传送门插件，面向 Paper / Leaves / Purpur / Spigot **MC 1.20.1 – 1.21.x**（Java 21）。
 
 放两扇门，手持门之钥依次右键，两门从此配对互通——走进任意一扇，从另一扇门前走出。像原版下界门一样自然，但连接的是任意两个世界的任意两扇门。
 
@@ -17,10 +17,11 @@
 
 | 文件 | 适用服务端 |
 |------|-----------|
-| `ddoor-x.y.z-paper.jar` | Paper / Leaves / Purpur（原生 Adventure，体积小） |
-| `ddoor-x.y.z-spigot.jar` | Spigot / CraftBukkit（内置重定位 Adventure，体积大） |
+| `ddoor-x.y.z-paper-1.20.jar` | Paper / Leaves / Purpur **1.20.1 – 1.20.6** |
+| `ddoor-x.y.z-paper.jar` | Paper / Leaves / Purpur **1.21 – 1.21.8+** |
+| `ddoor-x.y.z-spigot.jar` | Spigot / CraftBukkit **1.21+**（内置重定位 Adventure，体积大） |
 
-两个包功能完全一致，按服务端类型选一个即可。
+各包功能完全一致，按服务端版本选一个即可。Paper 包按 Bukkit `api-version` 分 1.20 / 1.21 两档，覆盖整个 1.20.1–1.21.x 范围。
 
 ## 文档
 
@@ -33,11 +34,12 @@
 
 ```bash
 cd plugin
-mvn clean package -P paper    # 产物: target/ddoor-1.0.2-paper.jar
-mvn clean package -P spigot   # 产物: target/ddoor-1.0.2-spigot.jar（shade Adventure）
+mvn clean package -P paper        # 产物: target/ddoor-1.0.2-paper.jar（MC 1.21.x）
+mvn clean package -P paper-120    # 产物: target/ddoor-1.0.2-paper-1.20.jar（MC 1.20.1–1.20.6）
+mvn clean package -P spigot       # 产物: target/ddoor-1.0.2-spigot.jar（shade Adventure）
 ```
 
-要求 JDK 21+。默认 profile 为 paper。依赖（paper-api / spigot-api、VaultAPI、PlaceholderAPI）均为 provided 作用域，运行时由服务器或对应插件提供；Spigot 包将 Adventure 序列化器 shade 并重定位到 `top.midream.ddoor.libs.kyori`。
+要求 JDK 21+。默认 profile 为 paper。依赖（paper-api / spigot-api、VaultAPI、PlaceholderAPI）均为 provided 作用域，运行时由服务器或对应插件提供；Spigot 包将 Adventure 序列化器 shade 并重定位到 `top.midream.ddoor.libs.kyori`。1.20 包以 paper-api 1.20.1 为最低基线编译，保证不误用 1.20.2+ 新 API。
 
 ## 安装
 

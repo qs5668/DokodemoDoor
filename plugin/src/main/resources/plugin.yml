@@ -1,7 +1,7 @@
 name: DokodemoDoor
 version: '${project.version}'
 main: top.midream.ddoor.DDoorPlugin
-api-version: '1.21'
+api-version: '${api.version}'
 authors: [qs5668]
 description: Pair-based cross-world door portals — place two doors, link with a key, walk through.
 website: https://dokodemodoor.plugin.midream.top

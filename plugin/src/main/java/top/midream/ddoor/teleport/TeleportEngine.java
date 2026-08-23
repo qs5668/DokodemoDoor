@@ -46,6 +46,14 @@ import java.util.UUID;
  */
 public class TeleportEngine {
 
+    // Renamed in 1.20.5: DAMAGE_RESISTANCE -> RESISTANCE
+    private static final PotionEffectType RESISTANCE = resolveResistance();
+
+    private static PotionEffectType resolveResistance() {
+        PotionEffectType t = PotionEffectType.getByName("RESISTANCE");
+        return t != null ? t : PotionEffectType.getByName("DAMAGE_RESISTANCE");
+    }
+
     private final DDoorPlugin plugin;
     private final PortalRegistry registry;
     private final PairManager pairs;
@@ -125,7 +133,7 @@ public class TeleportEngine {
             player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 8, 0, false, false, false));
         }
         if (cfg().antiFallTicks > 0) {
-            player.addPotionEffect(new PotionEffect(PotionEffectType.RESISTANCE,
+            player.addPotionEffect(new PotionEffect(RESISTANCE,
                     cfg().antiFallTicks, 4, false, false, false));
         }
 
